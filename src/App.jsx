@@ -5,6 +5,7 @@ import EventDetail from './pages/EventDetail.jsx';
 import Confirmation from './pages/Confirmation.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import Account from './pages/Account.jsx';
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -13,6 +14,7 @@ function Nav() {
     <nav style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 14 }}>
       {user ? (
         <>
+          <Link to="/account" style={{ color: 'var(--accent)' }}>Account</Link>
           <span style={{ color: 'var(--muted)' }}>{user.email}</span>
           <button onClick={async () => { await logout(); navigate('/'); }}>Log out</button>
         </>
@@ -37,6 +39,7 @@ export default function App() {
           <Route path="/orders/:id" element={<Confirmation />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/account" element={<Account />} />
         </Routes>
       </main>
     </>
