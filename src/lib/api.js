@@ -14,6 +14,24 @@ export class ApiError extends Error {
 
 export const http = axios.create({ baseURL: '/api/v1', withCredentials: true });
 
+function readCookie(name) {
+  const m = document.cookie.match(new RegExp(`(^|; )${name}=([^;]+)`));
+  return m ? decodeURIComponent(m[2]) : null;
+}
+
+// Rotate the access token using the httpOnly refresh cookie (+ CSRF double-submit).
+// Uses raw axios so it bypasses the unwrap/refresh interceptors below.
+async function refreshAccessToken() {
+  const csrf = readCookie('csrf');
+  const res = await axios.post('/api/v1/auth/refresh', {}, {
+    withCredentials: true, headers: csrf ? { 'X-CSRF-Token': csrf } : {},
+  });
+  const token = res.data?.data?.accessToken;
+  if (!token) throw new Error('refresh failed');
+  setAccessToken(token);
+  return token;
+}
+
 // Attach bearer token when present.
 http.interceptors.request.use((config) => {
   if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
@@ -30,8 +48,20 @@ http.interceptors.response.use(
     }
     return res.data?.data;
   },
-  (err) => {
+  async (err) => {
     const res = err.response;
+    const original = err.config || {};
+    const url = typeof original.url === 'string' ? original.url : '';
+    // Don't try to refresh on the credential endpoints themselves (avoids loops).
+    const isCredentialCall = /\/auth\/(refresh|login|register)/.test(url);
+    // On a stale access token, refresh once and replay the original request.
+    if (res?.status === 401 && !original._retried && !isCredentialCall) {
+      original._retried = true;
+      try {
+        await refreshAccessToken();
+        return await http(original);
+      } catch { /* refresh failed — fall through to surface the original 401 */ }
+    }
     const e = res?.data?.error;
     throw new ApiError(e?.code || 'NETWORK', res?.status || 0, e?.message || err.message);
   },
