@@ -41,3 +41,5 @@ export const apiGet = (path) => http.get(path);
 
 export const apiPost = (path, body, opts = {}) =>
   http.post(path, body, opts.idempotency ? { headers: { 'Idempotency-Key': crypto.randomUUID() } } : undefined);
+
+export const apiPatch = (path, body) => http.patch(path, body);
