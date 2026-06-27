@@ -8,6 +8,12 @@ const MESSAGES = {
   RESERVATION_EXPIRED: 'Your hold expired. Please start again.',
   ORDER_ALREADY_EXISTS: 'An order already exists for this hold.',
   VALIDATION_ERROR: 'Please check the form and try again.',
+  // Gate scanner outcomes.
+  TICKET_ALREADY_USED: 'Already scanned — this ticket has been used.',
+  TICKET_REVOKED: 'Revoked — this ticket was refunded and is not valid.',
+  WRONG_EVENT: 'Wrong event — this ticket is for a different event.',
+  TICKET_NOT_FOUND: 'Not found — no ticket matches this code.',
+  INVALID_QR: 'Invalid code — the QR signature did not verify.',
 };
 
 export function messageFor(e) {
