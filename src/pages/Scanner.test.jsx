@@ -1,5 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
+
+// Mock the camera library: start() immediately reports one decoded token.
+vi.mock('html5-qrcode', () => ({
+  Html5Qrcode: class {
+    async start(_camera, _config, onSuccess) { onSuccess('CAM-TOKEN'); }
+    async stop() {}
+    clear() {}
+  },
+}));
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -39,5 +48,13 @@ describe('Scanner', () => {
     );
     await fillAndScan('TKN');
     expect(await screen.findByText(/already scanned/i)).toBeInTheDocument();
+  });
+
+  it('scans via the camera and admits', async () => {
+    server.use(http.post('/api/v1/events/e1/scan', () => HttpResponse.json({ success: true, data: { result: 'accepted' } })));
+    renderScanner();
+    await userEvent.type(screen.getByLabelText(/event id/i), 'e1');
+    await userEvent.click(screen.getByRole('button', { name: /use camera/i }));
+    expect(await screen.findByText(/admitted/i)).toBeInTheDocument();
   });
 });
