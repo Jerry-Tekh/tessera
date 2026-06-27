@@ -3,7 +3,7 @@ import { heroFor, HERO_COUNT } from './images';
 
 describe('heroFor', () => {
   it('returns a path within the local events folder', () => {
-    expect(heroFor('any-id')).toMatch(/^\/images\/events\/hero-\d+\.jpg$/);
+    expect(heroFor('any-id')).toMatch(/^\/images\/events\/hero-\d+\.svg$/);
   });
   it('is deterministic for the same id', () => {
     expect(heroFor('abc')).toBe(heroFor('abc'));
