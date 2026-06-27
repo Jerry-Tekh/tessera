@@ -7,6 +7,8 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Account from './pages/Account.jsx';
 import MyTickets from './pages/MyTickets.jsx';
+import OrganizerDashboard from './pages/OrganizerDashboard.jsx';
+import OrganizerEvent from './pages/OrganizerEvent.jsx';
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -15,6 +17,9 @@ function Nav() {
     <nav style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 14 }}>
       {user ? (
         <>
+          {(user.role === 'organizer' || user.role === 'super_admin') && (
+            <Link to="/organizer" style={{ color: 'var(--accent)' }}>Organizer</Link>
+          )}
           <Link to="/tickets" style={{ color: 'var(--accent)' }}>My tickets</Link>
           <Link to="/account" style={{ color: 'var(--accent)' }}>Account</Link>
           <span style={{ color: 'var(--muted)' }}>{user.email}</span>
@@ -43,6 +48,8 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/account" element={<Account />} />
           <Route path="/tickets" element={<MyTickets />} />
+          <Route path="/organizer" element={<OrganizerDashboard />} />
+          <Route path="/organizer/events/:id" element={<OrganizerEvent />} />
         </Routes>
       </main>
     </>
