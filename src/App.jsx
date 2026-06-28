@@ -1,4 +1,4 @@
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from './lib/auth.jsx';
 import Browse from './pages/Browse.jsx';
 import EventDetail from './pages/EventDetail.jsx';
@@ -14,23 +14,24 @@ import Scanner from './pages/Scanner.jsx';
 function Nav() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const link = ({ isActive }) => ({
+    fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase',
+    color: isActive ? 'var(--accent)' : 'var(--muted)', paddingBottom: 2,
+    borderBottom: isActive ? '1px solid var(--accent)' : '1px solid transparent',
+  });
   return (
-    <nav style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 14 }}>
+    <nav style={{ display: 'flex', gap: 22, alignItems: 'center' }}>
       {user ? (
         <>
-          {(user.role === 'organizer' || user.role === 'super_admin') && (
-            <Link to="/organizer" style={{ color: 'var(--accent)' }}>Organizer</Link>
-          )}
-          {(user.role === 'event_staff' || user.role === 'super_admin') && (
-            <Link to="/scan" style={{ color: 'var(--accent)' }}>Scan</Link>
-          )}
-          <Link to="/tickets" style={{ color: 'var(--accent)' }}>My tickets</Link>
-          <Link to="/account" style={{ color: 'var(--accent)' }}>Account</Link>
-          <span style={{ color: 'var(--muted)' }}>{user.email}</span>
+          {(user.role === 'organizer' || user.role === 'super_admin') && <NavLink to="/organizer" style={link}>Organizer</NavLink>}
+          {(user.role === 'event_staff' || user.role === 'super_admin') && <NavLink to="/scan" style={link}>Scan</NavLink>}
+          <NavLink to="/tickets" style={link}>My tickets</NavLink>
+          <NavLink to="/account" style={link}>Account</NavLink>
+          <span className="mono" style={{ color: 'var(--faint)', fontSize: '0.74rem' }}>{user.email}</span>
           <button onClick={async () => { await logout(); navigate('/'); }}>Log out</button>
         </>
       ) : (
-        <Link to="/login" style={{ color: 'var(--accent)' }}>Log in</Link>
+        <NavLink to="/login" style={link}>Log in</NavLink>
       )}
     </nav>
   );
@@ -39,11 +40,19 @@ function Nav() {
 export default function App() {
   return (
     <>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
-        <Link to="/" style={{ letterSpacing: 2, color: 'var(--accent)' }}>TESSERA</Link>
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '18px 28px', borderBottom: '1px solid var(--border)',
+        background: 'rgba(10,10,11,0.72)', backdropFilter: 'blur(12px)',
+      }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ width: 11, height: 11, background: 'var(--accent)', display: 'inline-block' }} />
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.35rem', fontWeight: 600, letterSpacing: '0.02em' }}>Tessera</span>
+        </Link>
         <Nav />
       </header>
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: 20 }}>
+      <main style={{ maxWidth: 'var(--maxw)', margin: '0 auto', padding: '40px 28px 80px' }}>
         <Routes>
           <Route path="/" element={<Browse />} />
           <Route path="/events/:id" element={<EventDetail />} />
@@ -57,6 +66,9 @@ export default function App() {
           <Route path="/scan" element={<Scanner />} />
         </Routes>
       </main>
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '28px', textAlign: 'center' }}>
+        <span className="eyebrow">Tessera — Live Events</span>
+      </footer>
     </>
   );
 }
