@@ -1,16 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { heroFor, HERO_COUNT } from './images';
+import { heroFor, HEROES } from './images';
 
 describe('heroFor', () => {
-  it('returns a path within the local events folder', () => {
-    expect(heroFor('any-id')).toMatch(/^\/images\/events\/hero-\d+\.svg$/);
+  it('returns a local path to one of the downloaded hero photos', () => {
+    const p = heroFor('any-id');
+    expect(p.startsWith('/images/events/')).toBe(true);
+    expect(HEROES).toContain(p.replace('/images/events/', ''));
   });
   it('is deterministic for the same id', () => {
     expect(heroFor('abc')).toBe(heroFor('abc'));
   });
-  it('stays within the available image range', () => {
-    const n = Number(heroFor('xyz').match(/hero-(\d+)/)[1]);
-    expect(n).toBeGreaterThanOrEqual(1);
-    expect(n).toBeLessThanOrEqual(HERO_COUNT);
+  it('distributes across the available photos', () => {
+    const seen = new Set(Array.from({ length: 50 }, (_, i) => heroFor(`evt-${i}`)));
+    expect(seen.size).toBeGreaterThan(1);
   });
 });
