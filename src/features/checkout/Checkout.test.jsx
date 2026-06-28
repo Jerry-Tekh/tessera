@@ -33,4 +33,15 @@ describe('Checkout', () => {
     await userEvent.click(await screen.findByRole('button', { name: /pay/i }));
     expect(await screen.findByText(/paid|redirecting|finalizing/i)).toBeInTheDocument();
   });
+
+  it('adjusts quantity (capped at max) and updates the total', async () => {
+    renderCheckout();
+    const inc = screen.getByRole('button', { name: /increase quantity/i });
+    await userEvent.click(inc); // 2
+    expect(screen.getByText('$100.00')).toBeInTheDocument();
+    await userEvent.click(inc); // 3
+    await userEvent.click(inc); // 4 (max_per_customer)
+    expect(inc).toBeDisabled();
+    expect(screen.getByText('$200.00')).toBeInTheDocument();
+  });
 });
