@@ -5,6 +5,8 @@ import { apiGet, apiPost } from '../../lib/api';
 import { messageFor } from '../../lib/errors';
 import Countdown from '../../components/Countdown.jsx';
 
+const money = (c) => `$${(c / 100).toFixed(2)}`;
+
 export default function Checkout({ category, onClose }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -36,31 +38,47 @@ export default function Checkout({ category, onClose }) {
     refetchInterval: (q) => (q.state.data?.status === 'paid' ? false : 1500),
   });
   const paid = poll.data?.status === 'paid';
-  useEffect(() => {
-    if (paid && orderId) navigate(`/orders/${orderId}`);
-  }, [paid, orderId, navigate]);
+  useEffect(() => { if (paid && orderId) navigate(`/orders/${orderId}`); }, [paid, orderId, navigate]);
 
   return (
-    <div role="dialog" style={{ border: '1px solid var(--accent)', background: 'var(--surface)', padding: 18, marginTop: 16 }}>
-      <button onClick={onClose} style={{ float: 'right' }}>✕</button>
-      <h3>Checkout — {category.name}</h3>
-      {err && <p style={{ color: '#f87171' }}>{err}</p>}
-
-      {!reservation && (
-        <div>
-          <label>Email<br /><input value={email} onChange={(e) => setEmail(e.target.value)} type="email" /></label>
-          <div><button className="primary" disabled={!email} onClick={reserve}>Reserve</button></div>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(6,6,7,0.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div role="dialog" className="reveal" style={{ width: 'min(440px, 100%)', background: 'var(--surface)', border: '1px solid var(--line-strong)', boxShadow: 'var(--shadow)', padding: 28 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+          <div>
+            <span className="eyebrow">Checkout</span>
+            <h2 style={{ margin: '8px 0 0' }}>{category.name}</h2>
+            <span className="mono muted" style={{ fontSize: '0.82rem' }}>{money(category.price_cents)}</span>
+          </div>
+          <button onClick={onClose} aria-label="Close" style={{ padding: '6px 11px', border: '1px solid var(--border)' }}>✕</button>
         </div>
-      )}
 
-      {reservation && !orderId && (
-        <div>
-          <p>Hold expires in <Countdown deadline={reservation.expires_at} onExpire={() => { setReservation(null); setErr('Your hold expired. Please start again.'); }} /></p>
-          <button className="primary" onClick={pay}>Pay</button>
-        </div>
-      )}
+        <hr className="rule" style={{ margin: '20px 0' }} />
+        {err && <p style={{ color: 'var(--danger)', fontSize: '0.88rem' }}>{err}</p>}
 
-      {orderId && <p>{paid ? 'Paid — redirecting…' : 'Finalizing your order…'}</p>}
+        {!reservation && (
+          <div style={{ display: 'grid', gap: 16 }}>
+            <label>Email
+              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" />
+            </label>
+            <button className="primary" disabled={!email} onClick={reserve}>Reserve</button>
+          </div>
+        )}
+
+        {reservation && !orderId && (
+          <div style={{ display: 'grid', gap: 16 }}>
+            <p className="mono" style={{ fontSize: '0.9rem' }}>
+              Hold expires in <span style={{ color: 'var(--accent)' }}><Countdown deadline={reservation.expires_at} onExpire={() => { setReservation(null); setErr('Your hold expired. Please start again.'); }} /></span>
+            </p>
+            <button className="primary" onClick={pay}>Pay {money(category.price_cents)}</button>
+          </div>
+        )}
+
+        {orderId && (
+          <p className="mono" style={{ fontSize: '0.92rem', color: paid ? 'var(--accent)' : 'var(--muted)' }}>
+            {paid ? 'Paid — redirecting…' : 'Finalizing your order…'}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
