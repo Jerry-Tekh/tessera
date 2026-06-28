@@ -31,23 +31,32 @@ export default function Scanner() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 460 }}>
-      <h1>Gate scanner</h1>
+    <div style={{ maxWidth: 480, margin: '0 auto' }}>
+      <span className="eyebrow">Event-day gate</span>
+      <h1 style={{ marginTop: 12 }}>Scanner</h1>
+
       {result && (
-        <div role="status" style={{ padding: 16, marginBottom: 16, fontWeight: 800, color: result.ok ? '#052e16' : '#fff', background: result.ok ? '#22c55e' : '#dc2626' }}>
+        <div role="status" className="reveal" style={{
+          padding: '26px 20px', margin: '18px 0', textAlign: 'center',
+          fontFamily: 'var(--font-display)', fontSize: '1.7rem', fontWeight: 600,
+          color: result.ok ? 'var(--accent-ink)' : '#fff',
+          background: result.ok ? 'var(--accent)' : 'var(--danger)',
+          border: `1px solid ${result.ok ? 'var(--accent)' : 'var(--danger)'}`,
+        }}>
           {result.message}
         </div>
       )}
-      <form onSubmit={(e) => { e.preventDefault(); doScan(token); }} style={{ display: 'grid', gap: 12 }}>
-        <label>Event ID<br /><input value={eventId} onChange={(e) => setEventId(e.target.value)} required /></label>
-        <label>Ticket code<br /><input value={token} onChange={(e) => setToken(e.target.value)} required autoFocus /></label>
+
+      <form onSubmit={(e) => { e.preventDefault(); doScan(token); }} style={{ display: 'grid', gap: 16, marginTop: 8 }}>
+        <label>Event ID<input value={eventId} onChange={(e) => setEventId(e.target.value)} required placeholder="event uuid" /></label>
+        <label>Ticket code<input value={token} onChange={(e) => setToken(e.target.value)} required autoFocus placeholder="paste or scan" /></label>
         <button className="primary" type="submit" disabled={busy || !eventId || !token}>Scan</button>
       </form>
 
-      <button type="button" onClick={() => setCamera((c) => !c)} disabled={!eventId} style={{ marginTop: 12 }}>
+      <button type="button" onClick={() => setCamera((c) => !c)} disabled={!eventId} style={{ marginTop: 14, width: '100%' }}>
         {camera ? 'Stop camera' : 'Use camera'}
       </button>
-      {camera && <div style={{ marginTop: 12 }}><CameraScanner onDecode={onDecode} onError={onCamError} /></div>}
+      {camera && <div style={{ marginTop: 14 }}><CameraScanner onDecode={onDecode} onError={onCamError} /></div>}
     </div>
   );
 }

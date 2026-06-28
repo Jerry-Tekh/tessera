@@ -18,28 +18,34 @@ export default function OrganizerDashboard() {
   });
 
   return (
-    <div>
-      <h1>Organizer dashboard</h1>
+    <div className="reveal">
+      <span className="eyebrow">Organizer</span>
+      <h1 style={{ marginTop: 12 }}>Dashboard</h1>
 
       <form onSubmit={(e) => { e.preventDefault(); setErr(null); create.mutate(); }}
-        style={{ display: 'flex', gap: 10, alignItems: 'end', margin: '16px 0', flexWrap: 'wrap' }}>
-        <label>Event title<br /><input value={title} onChange={(e) => setTitle(e.target.value)} required /></label>
-        <label>Status<br />
-          <select value={status} onChange={(e) => setStatus(e.target.value)} style={{ padding: 8, background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+        style={{ display: 'flex', gap: 12, alignItems: 'end', flexWrap: 'wrap', margin: '24px 0', padding: 20, border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <label style={{ flex: '1 1 240px' }}>Event title<input value={title} onChange={(e) => setTitle(e.target.value)} required /></label>
+        <label>Status
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="draft">draft</option>
             <option value="published">published</option>
           </select>
         </label>
         <button className="primary" type="submit" disabled={!title || create.isPending}>Create event</button>
       </form>
-      {err && <p style={{ color: '#f87171' }}>{err}</p>}
+      {err && <p style={{ color: 'var(--danger)' }}>{err}</p>}
 
-      {isLoading ? <p>Loading events…</p> : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
+      <h2 style={{ marginTop: 8 }}>All events</h2>
+      <hr className="rule" style={{ margin: '14px 0' }} />
+      {isLoading ? <p className="muted">Loading events…</p> : (
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {(events ?? []).map((ev) => (
-            <li key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', border: '1px solid var(--border)', padding: 12, marginBottom: 8 }}>
-              <span>{ev.title} <small style={{ color: 'var(--muted)' }}>· {ev.status}</small></span>
-              <Link to={`/organizer/events/${ev.id}`} style={{ color: 'var(--accent)' }}>Manage →</Link>
+            <li key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 2px', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem' }}>{ev.title}</span>
+                <span className="badge">{ev.status}</span>
+              </span>
+              <Link to={`/organizer/events/${ev.id}`} className="eyebrow" style={{ color: 'var(--accent)' }}>Manage →</Link>
             </li>
           ))}
         </ul>
