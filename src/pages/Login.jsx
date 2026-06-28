@@ -26,13 +26,18 @@ export default function Login() {
   }
 
   return (
-    <form onSubmit={onSubmit} style={{ maxWidth: 360, display: 'grid', gap: 12 }}>
-      <h1>Log in</h1>
-      {err && <p style={{ color: '#f87171' }}>{err}</p>}
-      <label>Email<br /><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-      <label>Password<br /><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
-      <button className="primary" disabled={busy} type="submit">Log in</button>
-      <p style={{ color: 'var(--muted)' }}>No account? <Link to="/register" style={{ color: 'var(--accent)' }}>Register</Link></p>
-    </form>
+    <div className="reveal" style={{ maxWidth: 400, margin: '40px auto', border: '1px solid var(--border)', background: 'var(--surface)', padding: 36 }}>
+      <span className="eyebrow">Welcome back</span>
+      <h1 style={{ fontSize: '2.4rem', margin: '12px 0 24px' }}>Log in</h1>
+      {err && <p style={{ color: 'var(--danger)', fontSize: '0.9rem' }}>{err}</p>}
+      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 18 }}>
+        <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+        <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+        <button className="primary" disabled={busy} type="submit">Log in</button>
+      </form>
+      <p className="muted" style={{ marginTop: 22, fontSize: '0.9rem' }}>
+        No account? <Link to="/register" style={{ color: 'var(--accent)' }}>Create one</Link>
+      </p>
+    </div>
   );
 }
