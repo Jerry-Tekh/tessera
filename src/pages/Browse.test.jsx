@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { server } from '../test/server';
@@ -24,5 +25,20 @@ describe('Browse', () => {
     })));
     renderPage();
     expect(await screen.findByText('Midnight Symphony')).toBeInTheDocument();
+  });
+
+  it('filters the grid by the search box', async () => {
+    server.use(http.get('/api/v1/events', () => HttpResponse.json({
+      success: true,
+      data: [
+        { id: 'e1', title: 'Midnight Symphony', location: 'Royal Hall', starts_at: null, status: 'published', description: null, created_at: '' },
+        { id: 'e2', title: 'Neon Pulse Festival', location: 'Harbour', starts_at: null, status: 'published', description: null, created_at: '' },
+      ],
+    })));
+    renderPage();
+    expect(await screen.findByText('Midnight Symphony')).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/search events/i), 'neon');
+    expect(screen.getByText('Neon Pulse Festival')).toBeInTheDocument();
+    expect(screen.queryByText('Midnight Symphony')).not.toBeInTheDocument();
   });
 });
