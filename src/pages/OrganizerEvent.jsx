@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiGet } from '../lib/api';
-import { updateEvent, createCategory, eventSales } from '../lib/organizerApi';
+import { updateEvent, createCategory, eventSales, eventOrders, refundOrder } from '../lib/organizerApi';
 import { messageFor } from '../lib/errors';
 import { heroFor } from '../lib/images';
 
@@ -18,6 +18,17 @@ export default function OrganizerEvent() {
 
   const event = useQuery({ queryKey: ['event', id], queryFn: () => apiGet(`/events/${id}`) });
   const sales = useQuery({ queryKey: ['sales', id], queryFn: () => eventSales(id) });
+  const orders = useQuery({ queryKey: ['event-orders', id], queryFn: () => eventOrders(id) });
+
+  const refund = useMutation({
+    mutationFn: refundOrder,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['event-orders', id] });
+      qc.invalidateQueries({ queryKey: ['sales', id] });
+      qc.invalidateQueries({ queryKey: ['event', id] });
+    },
+    onError: (e) => setErr(messageFor(e)),
+  });
 
   const publish = useMutation({
     mutationFn: () => updateEvent(id, { status: 'published' }),
@@ -75,6 +86,32 @@ export default function OrganizerEvent() {
         <label>Quantity<input type="number" value={qty} onChange={(e) => setQty(e.target.value)} required /></label>
         <button className="primary" type="submit" disabled={addCategory.isPending}>Add category</button>
       </form>
+
+      <h2 style={{ marginTop: 40 }}>Orders</h2>
+      <hr className="rule" style={{ margin: '14px 0' }} />
+      {orders.isLoading && <p className="muted">Loading orders…</p>}
+      {orders.data && orders.data.length === 0 && <p className="muted">No orders yet.</p>}
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        {(orders.data ?? []).map((o) => (
+          <li key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '14px 2px', borderBottom: '1px solid var(--border)' }}>
+            <span>
+              <span style={{ fontWeight: 600 }}>{o.email}</span>
+              <span className="mono muted" style={{ display: 'block', fontSize: '0.74rem', marginTop: 3 }}>
+                {o.category_name} · {o.quantity}× · {money(o.amount_cents)}
+              </span>
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span className={`badge${o.status === 'paid' ? ' ok' : ''}`}>{o.status}</span>
+              <button
+                onClick={() => { setErr(null); refund.mutate(o.id); }}
+                disabled={o.status !== 'paid' || refund.isPending}
+              >
+                Refund
+              </button>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

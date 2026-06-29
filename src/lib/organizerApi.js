@@ -5,4 +5,5 @@ export const createEvent = (data) => apiPost('/events', data);
 export const updateEvent = (id, data) => apiPatch(`/events/${id}`, data);
 export const createCategory = (eventId, data) => apiPost(`/events/${eventId}/categories`, data);
 export const eventSales = (id) => apiGet(`/events/${id}/sales`);
+export const eventOrders = (id) => apiGet(`/events/${id}/orders`);
 export const refundOrder = (orderId) => apiPost(`/orders/${orderId}/refund`, {});

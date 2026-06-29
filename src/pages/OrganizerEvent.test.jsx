@@ -27,6 +27,7 @@ describe('OrganizerEvent', () => {
     server.use(
       http.get('/api/v1/events/e1', () => HttpResponse.json({ success: true, data: { ...draft, status } })),
       http.get('/api/v1/events/e1/sales', () => HttpResponse.json({ success: true, data: sales })),
+      http.get('/api/v1/events/e1/orders', () => HttpResponse.json({ success: true, data: [] })),
       http.patch('/api/v1/events/e1', async ({ request }) => { const b = await request.json(); status = b.status ?? status; return HttpResponse.json({ success: true, data: { ...draft, status } }); }),
     );
     renderAt('e1');
@@ -42,6 +43,7 @@ describe('OrganizerEvent', () => {
     server.use(
       http.get('/api/v1/events/e1', () => HttpResponse.json({ success: true, data: { ...draft, categories } })),
       http.get('/api/v1/events/e1/sales', () => HttpResponse.json({ success: true, data: sales })),
+      http.get('/api/v1/events/e1/orders', () => HttpResponse.json({ success: true, data: [] })),
       http.post('/api/v1/events/e1/categories', async ({ request }) => {
         const b = await request.json();
         const c = { id: 'c1', event_id: 'e1', name: b.name, price_cents: b.priceCents, total_quantity: b.totalQuantity, available_quantity: b.totalQuantity, max_per_customer: 10, sales_open_at: null, sales_close_at: null };
@@ -56,5 +58,25 @@ describe('OrganizerEvent', () => {
     await userEvent.type(screen.getByLabelText(/quantity/i), '20');
     await userEvent.click(screen.getByRole('button', { name: /add category/i }));
     expect(await screen.findByText(/VIP/)).toBeInTheDocument();
+  });
+
+  it('refunds a paid order from the orders list', async () => {
+    let orders = [{ id: 'o1', email: 'buyer@b.co', category_name: 'GA', quantity: 2, amount_cents: 2000, status: 'paid', created_at: '' }];
+    let refunded = false;
+    server.use(
+      http.get('/api/v1/events/e1', () => HttpResponse.json({ success: true, data: { ...draft, status: 'published' } })),
+      http.get('/api/v1/events/e1/sales', () => HttpResponse.json({ success: true, data: sales })),
+      http.get('/api/v1/events/e1/orders', () => HttpResponse.json({ success: true, data: orders })),
+      http.post('/api/v1/orders/o1/refund', () => {
+        refunded = true;
+        orders = orders.map((o) => ({ ...o, status: 'refunded' }));
+        return HttpResponse.json({ success: true, data: { result: 'refunded', orderId: 'o1' } });
+      }),
+    );
+    renderAt('e1');
+    expect(await screen.findByText('buyer@b.co')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /refund/i }));
+    await screen.findByText('refunded');
+    expect(refunded).toBe(true);
   });
 });
