@@ -25,6 +25,10 @@ function renderScanner() {
   );
 }
 
+function mockEvents() {
+  server.use(http.get('/api/v1/events', () => HttpResponse.json({ success: true, data: [{ id: 'e1', title: 'Gate Night', location: 'Hall' }] })));
+}
+
 async function fillAndScan(token) {
   const tokenInput = screen.getByLabelText(/ticket code/i);
   await userEvent.clear(tokenInput);
@@ -34,6 +38,7 @@ async function fillAndScan(token) {
 
 describe('Scanner', () => {
   it('admits a valid ticket then rejects a duplicate', async () => {
+    mockEvents();
     server.use(
       http.post('/api/v1/events/e1/scan', () => HttpResponse.json({ success: true, data: { result: 'accepted', ticketId: 't1' } })),
     );
@@ -51,9 +56,10 @@ describe('Scanner', () => {
   });
 
   it('scans via the camera and admits', async () => {
+    mockEvents();
     server.use(http.post('/api/v1/events/e1/scan', () => HttpResponse.json({ success: true, data: { result: 'accepted' } })));
     renderScanner();
-    await userEvent.type(screen.getByLabelText(/event id/i), 'e1');
+    await userEvent.selectOptions(await screen.findByLabelText(/^event$/i), 'e1');
     await userEvent.click(screen.getByRole('button', { name: /use camera/i }));
     expect(await screen.findByText(/admitted/i)).toBeInTheDocument();
   });

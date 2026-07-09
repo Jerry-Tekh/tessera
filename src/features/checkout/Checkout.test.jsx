@@ -24,6 +24,7 @@ describe('Checkout', () => {
     const future = new Date(Date.now() + 120000).toISOString();
     server.use(
       http.post('/api/v1/reservations', () => HttpResponse.json({ success: true, data: { reservation: { id: 'r1', status: 'held', expires_at: future, category_id: 'c1', quantity: 1, payment_deadline: null }, expiresAt: future } }, { status: 201 })),
+      http.get('/api/v1/reservations/r1', () => HttpResponse.json({ success: true, data: { id: 'r1', status: 'held', expires_at: future, category_id: 'c1', quantity: 1, payment_deadline: null } })),
       http.post('/api/v1/orders', () => HttpResponse.json({ success: true, data: { order: { id: 'o1', status: 'pending', amount_cents: 5000, created_at: '' } } }, { status: 201 })),
       http.get('/api/v1/orders/o1', () => HttpResponse.json({ success: true, data: { id: 'o1', status: 'paid', amount_cents: 5000, created_at: '', tickets: [{ id: 't1', order_id: 'o1', qr_token: 'TKN', status: 'issued' }] } })),
     );
@@ -32,6 +33,25 @@ describe('Checkout', () => {
     await userEvent.click(screen.getByRole('button', { name: /reserve/i }));
     await userEvent.click(await screen.findByRole('button', { name: /pay/i }));
     expect(await screen.findByText(/paid|redirecting|finalizing/i)).toBeInTheDocument();
+  });
+
+  it('cancels a live reservation hold', async () => {
+    const future = new Date(Date.now() + 120000).toISOString();
+    let cancelled = false;
+    server.use(
+      http.post('/api/v1/reservations', () => HttpResponse.json({ success: true, data: { reservation: { id: 'r1', status: 'held', expires_at: future, category_id: 'c1', quantity: 1, payment_deadline: null }, expiresAt: future } }, { status: 201 })),
+      http.get('/api/v1/reservations/r1', () => HttpResponse.json({ success: true, data: { id: 'r1', status: 'held', expires_at: future, category_id: 'c1', quantity: 1, payment_deadline: null } })),
+      http.post('/api/v1/reservations/r1/cancel', () => {
+        cancelled = true;
+        return HttpResponse.json({ success: true, data: { id: 'r1', status: 'cancelled' } });
+      }),
+    );
+    renderCheckout();
+    await userEvent.type(screen.getByLabelText(/email/i), 'fan@b.co');
+    await userEvent.click(screen.getByRole('button', { name: /reserve/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /cancel hold/i }));
+    expect(cancelled).toBe(true);
+    expect(screen.getByRole('button', { name: /reserve/i })).toBeInTheDocument();
   });
 
   it('adjusts quantity (capped at max) and updates the total', async () => {
