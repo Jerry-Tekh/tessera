@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Link, useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from './lib/auth.jsx';
 import Browse from './pages/Browse.jsx';
@@ -14,26 +15,31 @@ import Scanner from './pages/Scanner.jsx';
 function Nav() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
   const link = ({ isActive }) => ({
     fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase',
     color: isActive ? 'var(--accent)' : 'var(--muted)', paddingBottom: 2,
     borderBottom: isActive ? '1px solid var(--accent)' : '1px solid transparent',
   });
   return (
-    <nav style={{ display: 'flex', gap: 22, alignItems: 'center' }}>
-      {user ? (
-        <>
-          {(user.role === 'organizer' || user.role === 'super_admin') && <NavLink to="/organizer" style={link}>Organizer</NavLink>}
-          {(user.role === 'event_staff' || user.role === 'super_admin') && <NavLink to="/scan" style={link}>Scan</NavLink>}
-          <NavLink to="/tickets" style={link}>My tickets</NavLink>
-          <NavLink to="/account" style={link}>Account</NavLink>
-          <span className="mono" style={{ color: 'var(--faint)', fontSize: '0.74rem' }}>{user.email}</span>
-          <button onClick={async () => { await logout(); navigate('/'); }}>Log out</button>
-        </>
-      ) : (
-        <NavLink to="/login" style={link}>Log in</NavLink>
-      )}
-    </nav>
+    <>
+      <button className="nav-toggle" aria-label="Toggle menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>☰</button>
+      <div className={`nav ${open ? 'open' : ''}`}>
+        {user ? (
+          <>
+            {(user.role === 'organizer' || user.role === 'super_admin') && <NavLink to="/organizer" style={link} onClick={close}>Organizer</NavLink>}
+            {(user.role === 'event_staff' || user.role === 'super_admin') && <NavLink to="/scan" style={link} onClick={close}>Scan</NavLink>}
+            <NavLink to="/tickets" style={link} onClick={close}>My tickets</NavLink>
+            <NavLink to="/account" style={link} onClick={close}>Account</NavLink>
+            <span className="mono" style={{ color: 'var(--faint)', fontSize: '0.74rem' }}>{user.email}</span>
+            <button onClick={async () => { close(); await logout(); navigate('/'); }}>Log out</button>
+          </>
+        ) : (
+          <NavLink to="/login" style={link} onClick={close}>Log in</NavLink>
+        )}
+      </div>
+    </>
   );
 }
 

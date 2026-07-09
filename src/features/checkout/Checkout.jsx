@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../lib/api';
@@ -20,6 +20,17 @@ export default function Checkout({ category, onClose }) {
     [category],
   );
   const total = qty * category.price_cents;
+
+  // Escape to close, focus the dialog, and lock background scroll while open.
+  const dialogRef = useRef(null);
+  useEffect(() => {
+    dialogRef.current?.focus();
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [onClose]);
 
   async function reserve() {
     setErr(null);
@@ -50,8 +61,11 @@ export default function Checkout({ category, onClose }) {
   const step = (d) => setQty((q) => Math.min(maxQty, Math.max(1, q + d)));
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(6,6,7,0.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div role="dialog" className="reveal" style={{ width: 'min(440px, 100%)', background: 'var(--surface)', border: '1px solid var(--line-strong)', boxShadow: 'var(--shadow)', padding: 28 }}>
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(6,6,7,0.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+    >
+      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={`Checkout — ${category.name}`} className="reveal" style={{ width: 'min(440px, 100%)', background: 'var(--surface)', border: '1px solid var(--line-strong)', boxShadow: 'var(--shadow)', padding: 28, outline: 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
           <div>
             <span className="eyebrow">Checkout</span>
