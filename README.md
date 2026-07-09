@@ -1,16 +1,27 @@
-# React + Vite
+# Tessera Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + Vite frontend for Tessera.
 
-Currently, two official plugins are available:
+## Local Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Run the API on `http://localhost:3000`, then start the frontend:
 
-## React Compiler
+```bash
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Vite serves the app on `http://127.0.0.1:5173/` and proxies `/api` to the backend.
 
-## Expanding the Oxlint configuration
+## Demo Logins
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Seed these accounts from the backend with `npm run seed:demo-users`.
+
+All demo accounts use password `TesseraDemo123!`.
+
+| Role | Email |
+| --- | --- |
+| super_admin | `demo.superadmin@tessera.local` |
+| organizer | `demo.organizer@tessera.local` |
+| event_staff | `demo.staff@tessera.local` |
+| registered_user | `demo.user@tessera.local` |
