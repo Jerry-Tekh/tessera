@@ -91,16 +91,17 @@ button.primary:hover, .btn.primary:hover { background: var(--accent-bright); bor
 button:disabled, .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 /* Form fields */
-input, select {
+input, select, textarea {
   font-family: var(--font-ui); font-size: 0.95rem; width: 100%;
   padding: 11px 13px; color: var(--text);
   background: var(--surface); border: 1px solid var(--border);
   transition: border-color .18s ease, background .18s ease;
 }
-input:focus, select:focus { outline: none; border-color: var(--accent); background: #101012; }
+textarea { resize: vertical; min-height: 86px; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: #101012; }
 input::placeholder { color: var(--faint); }
 label { display: block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-label input, label select { margin-top: 7px; }
+label input, label select, label textarea { margin-top: 7px; }
 
 /* Hairline rule */
 .rule { height: 1px; background: var(--border); border: 0; }
