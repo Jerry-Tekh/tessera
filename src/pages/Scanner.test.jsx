@@ -59,6 +59,7 @@ describe('Scanner', () => {
     mockEvents();
     server.use(http.post('/api/v1/events/e1/scan', () => HttpResponse.json({ success: true, data: { result: 'accepted' } })));
     renderScanner();
+    await screen.findByRole('option', { name: /gate night/i });
     await userEvent.selectOptions(await screen.findByLabelText(/^event$/i), 'e1');
     await userEvent.click(screen.getByRole('button', { name: /use camera/i }));
     expect(await screen.findByText(/admitted/i)).toBeInTheDocument();
