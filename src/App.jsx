@@ -11,6 +11,7 @@ import MyTickets from './pages/MyTickets.jsx';
 import OrganizerDashboard from './pages/OrganizerDashboard.jsx';
 import OrganizerEvent from './pages/OrganizerEvent.jsx';
 import Scanner from './pages/Scanner.jsx';
+import SystemHealth from './components/SystemHealth.jsx';
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -72,8 +73,9 @@ export default function App() {
           <Route path="/scan" element={<Scanner />} />
         </Routes>
       </main>
-      <footer style={{ borderTop: '1px solid var(--border)', padding: '28px', textAlign: 'center' }}>
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '28px', display: 'flex', justifyContent: 'center' }}>
         <span className="eyebrow">Tessera — Live Events</span>
+        <SystemHealth />
       </footer>
     </>
   );
