@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../lib/api';
+import { cancelReservation, getReservation } from '../../lib/reservationApi';
 import { messageFor } from '../../lib/errors';
 import Countdown from '../../components/Countdown.jsx';
 
@@ -14,6 +15,7 @@ export default function Checkout({ category, onClose }) {
   const [reservation, setReservation] = useState(null);
   const [orderId, setOrderId] = useState(null);
   const [err, setErr] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const maxQty = useMemo(
     () => Math.max(1, Math.min(category.max_per_customer ?? 10, category.available_quantity ?? 1)),
@@ -44,10 +46,34 @@ export default function Checkout({ category, onClose }) {
   async function pay() {
     setErr(null);
     try {
-      const r = await apiPost('/orders', { reservationId: reservation.id }, { idempotency: true });
+      const r = await apiPost('/orders', { reservationId: liveReservation.id }, { idempotency: true });
       setOrderId(r.order.id);
     } catch (e) { setErr(messageFor(e)); }
   }
+
+  async function cancelHold() {
+    if (!reservation?.id) return;
+    setErr(null);
+    setCancelling(true);
+    try {
+      await cancelReservation(reservation.id);
+      setReservation(null);
+      setOrderId(null);
+    } catch (e) {
+      setErr(messageFor(e));
+    } finally {
+      setCancelling(false);
+    }
+  }
+
+  const reservationQuery = useQuery({
+    queryKey: ['reservation', reservation?.id],
+    queryFn: () => getReservation(reservation.id),
+    enabled: !!reservation?.id && !orderId,
+    refetchInterval: (q) => (['held', 'paying'].includes(q.state.data?.status) ? 1500 : false),
+  });
+  const liveReservation = reservationQuery.data ?? reservation;
+  const canPay = liveReservation?.status === 'held';
 
   const poll = useQuery({
     queryKey: ['order', orderId],
@@ -105,13 +131,22 @@ export default function Checkout({ category, onClose }) {
         {reservation && !orderId && (
           <div style={{ display: 'grid', gap: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span className="mono muted" style={{ fontSize: '0.82rem' }}>{qty} ticket{qty === 1 ? '' : 's'}</span>
+              <span className="mono muted" style={{ fontSize: '0.82rem' }}>
+                {qty} ticket{qty === 1 ? '' : 's'} · {liveReservation.status}
+              </span>
               <span className="mono" style={{ fontSize: '1.2rem' }}>{money(total)}</span>
             </div>
-            <p className="mono" style={{ fontSize: '0.9rem' }}>
-              Hold expires in <span style={{ color: 'var(--accent)' }}><Countdown deadline={reservation.expires_at} onExpire={() => { setReservation(null); setErr('Your hold expired. Please start again.'); }} /></span>
-            </p>
-            <button className="primary" onClick={pay}>Pay {money(total)}</button>
+            {canPay ? (
+              <p className="mono" style={{ fontSize: '0.9rem' }}>
+                Hold expires in <span style={{ color: 'var(--accent)' }}><Countdown deadline={liveReservation.expires_at} onExpire={() => { setReservation(null); setErr('Your hold expired. Please start again.'); }} /></span>
+              </p>
+            ) : (
+              <p className="muted" style={{ fontSize: '0.9rem' }}>This hold is no longer payable. Start again to reserve fresh tickets.</p>
+            )}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="primary" onClick={pay} disabled={!canPay}>Pay {money(total)}</button>
+              <button onClick={cancelHold} disabled={cancelling}>{cancelling ? 'Cancelling…' : 'Cancel hold'}</button>
+            </div>
           </div>
         )}
 
