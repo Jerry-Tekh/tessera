@@ -12,6 +12,7 @@ import OrganizerDashboard from './pages/OrganizerDashboard.jsx';
 import OrganizerEvent from './pages/OrganizerEvent.jsx';
 import Scanner from './pages/Scanner.jsx';
 import SystemHealth from './components/SystemHealth.jsx';
+import { RequireAuth, RequireRole } from './components/RouteGuards.jsx';
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -66,11 +67,11 @@ export default function App() {
           <Route path="/orders/:id" element={<Confirmation />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/tickets" element={<MyTickets />} />
-          <Route path="/organizer" element={<OrganizerDashboard />} />
-          <Route path="/organizer/events/:id" element={<OrganizerEvent />} />
-          <Route path="/scan" element={<Scanner />} />
+          <Route path="/account" element={<RequireAuth><Account /></RequireAuth>} />
+          <Route path="/tickets" element={<RequireAuth><MyTickets /></RequireAuth>} />
+          <Route path="/organizer" element={<RequireRole roles={['organizer', 'super_admin']}><OrganizerDashboard /></RequireRole>} />
+          <Route path="/organizer/events/:id" element={<RequireRole roles={['organizer', 'super_admin']}><OrganizerEvent /></RequireRole>} />
+          <Route path="/scan" element={<RequireRole roles={['event_staff', 'super_admin']}><Scanner /></RequireRole>} />
         </Routes>
       </main>
       <footer style={{ borderTop: '1px solid var(--border)', padding: '28px', display: 'flex', justifyContent: 'center' }}>
