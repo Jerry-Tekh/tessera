@@ -19,12 +19,16 @@ function readCookie(name) {
   return m ? decodeURIComponent(m[2]) : null;
 }
 
+function csrfHeader() {
+  const csrf = readCookie('csrf');
+  return csrf ? { 'X-CSRF-Token': csrf } : {};
+}
+
 // Rotate the access token using the httpOnly refresh cookie (+ CSRF double-submit).
 // Uses raw axios so it bypasses the unwrap/refresh interceptors below.
 async function refreshAccessToken() {
-  const csrf = readCookie('csrf');
   const res = await axios.post('/api/v1/auth/refresh', {}, {
-    withCredentials: true, headers: csrf ? { 'X-CSRF-Token': csrf } : {},
+    withCredentials: true, headers: csrfHeader(),
   });
   const token = res.data?.data?.accessToken;
   if (!token) throw new Error('refresh failed');
@@ -35,6 +39,10 @@ async function refreshAccessToken() {
 // Attach bearer token when present.
 http.interceptors.request.use((config) => {
   if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
+  const method = (config.method || 'get').toLowerCase();
+  if (['post', 'patch', 'put', 'delete'].includes(method)) {
+    config.headers = { ...csrfHeader(), ...config.headers };
+  }
   return config;
 });
 
