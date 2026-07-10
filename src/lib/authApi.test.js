@@ -1,7 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '../test/server';
-import { login, register, me, listSessions, revokeSession } from './authApi';
+import {
+  changePassword,
+  listSessions,
+  listUsers,
+  login,
+  me,
+  register,
+  revokeSession,
+  updateMe,
+  updateUserRole,
+} from './authApi';
 
 describe('authApi', () => {
   it('login returns accessToken and user', async () => {
@@ -43,5 +53,43 @@ describe('authApi', () => {
     server.use(http.post('/api/v1/auth/sessions/s1/revoke', () => { hit = true; return HttpResponse.json({ success: true, data: { ok: true } }); }));
     await revokeSession('s1');
     expect(hit).toBe(true);
+  });
+
+  it('updates the current user profile', async () => {
+    let body = null;
+    server.use(http.patch('/api/v1/auth/me', async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({ success: true, data: { id: 'u1', ...body, role: 'registered_user' } });
+    }));
+    const user = await updateMe({ name: 'B', email: 'b@b.co' });
+    expect(user.email).toBe('b@b.co');
+    expect(body).toEqual({ name: 'B', email: 'b@b.co' });
+  });
+
+  it('changes password', async () => {
+    let body = null;
+    server.use(http.post('/api/v1/auth/password', async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({ success: true, data: { ok: true } });
+    }));
+    await changePassword({ currentPassword: 'old', newPassword: 'newPassword123' });
+    expect(body).toEqual({ currentPassword: 'old', newPassword: 'newPassword123' });
+  });
+
+  it('lists admin users and updates a role', async () => {
+    let roleBody = null;
+    server.use(
+      http.get('/api/v1/admin/users', () => HttpResponse.json({
+        success: true,
+        data: [{ id: 'u1', name: 'A', email: 'a@b.co', role: 'registered_user' }],
+      })),
+      http.patch('/api/v1/admin/users/u1/role', async ({ request }) => {
+        roleBody = await request.json();
+        return HttpResponse.json({ success: true, data: { id: 'u1', role: roleBody.role } });
+      }),
+    );
+    expect((await listUsers())[0].id).toBe('u1');
+    expect((await updateUserRole('u1', 'organizer')).role).toBe('organizer');
+    expect(roleBody).toEqual({ role: 'organizer' });
   });
 });
