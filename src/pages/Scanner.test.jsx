@@ -26,7 +26,7 @@ function renderScanner() {
 }
 
 function mockEvents() {
-  server.use(http.get('/api/v1/events', () => HttpResponse.json({ success: true, data: [{ id: 'e1', title: 'Gate Night', location: 'Hall' }] })));
+  server.use(http.get('/api/v1/staff/events', () => HttpResponse.json({ success: true, data: [{ id: 'e1', title: 'Gate Night', location: 'Hall' }] })));
 }
 
 async function fillAndScan(token) {
@@ -63,5 +63,11 @@ describe('Scanner', () => {
     await userEvent.selectOptions(await screen.findByLabelText(/^event$/i), 'e1');
     await userEvent.click(screen.getByRole('button', { name: /use camera/i }));
     expect(await screen.findByText(/admitted/i)).toBeInTheDocument();
+  });
+
+  it('shows when no events are assigned to the staff user', async () => {
+    server.use(http.get('/api/v1/staff/events', () => HttpResponse.json({ success: true, data: [] })));
+    renderScanner();
+    expect(await screen.findByText(/no assigned events/i)).toBeInTheDocument();
   });
 });
