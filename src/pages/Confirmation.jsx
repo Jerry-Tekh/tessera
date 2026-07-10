@@ -10,9 +10,27 @@ export default function Confirmation() {
   const { data, isLoading } = useQuery({
     queryKey: ['order', id],
     queryFn: () => apiGet(`/orders/${id}`),
-    refetchInterval: (q) => (q.state.data?.status === 'paid' ? false : 1500),
+    refetchInterval: (q) => (['paid', 'failed', 'refunded'].includes(q.state.data?.status) ? false : 1500),
   });
   if (isLoading || !data) return <p className="muted">Loading order…</p>;
+  if (data.status === 'failed') {
+    return (
+      <div style={{ textAlign: 'center', padding: '80px 0' }}>
+        <span className="eyebrow" style={{ color: 'var(--danger)' }}>Payment failed</span>
+        <h1 style={{ marginTop: 12 }}>Your order could not be completed.</h1>
+        <p className="muted">No tickets were issued. Please return to the event and try again.</p>
+      </div>
+    );
+  }
+  if (data.status === 'refunded') {
+    return (
+      <div style={{ textAlign: 'center', padding: '80px 0' }}>
+        <span className="eyebrow">Refunded</span>
+        <h1 style={{ marginTop: 12 }}>This order has been refunded.</h1>
+        <p className="muted">Issued tickets for this order are no longer valid for entry.</p>
+      </div>
+    );
+  }
   if (data.status !== 'paid') {
     return (
       <div style={{ textAlign: 'center', padding: '80px 0' }}>
