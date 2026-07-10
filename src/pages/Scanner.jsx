@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiGet } from '../lib/api';
-import { scanTicket } from '../lib/scanApi';
+import { listScannableEvents, scanTicket } from '../lib/scanApi';
 import { messageFor } from '../lib/errors';
 import CameraScanner from '../components/CameraScanner.jsx';
 
@@ -13,7 +12,7 @@ export default function Scanner() {
   const [camera, setCamera] = useState(false);
   const events = useQuery({
     queryKey: ['scanner-events'],
-    queryFn: () => apiGet('/events?page=1&pageSize=100'),
+    queryFn: listScannableEvents,
   });
 
   const doScan = useCallback(async (tok) => {
@@ -55,13 +54,18 @@ export default function Scanner() {
 
       <form onSubmit={(e) => { e.preventDefault(); doScan(token); }} style={{ display: 'grid', gap: 16, marginTop: 8 }}>
         <label>Event
-          <select value={eventId} onChange={(e) => setEventId(e.target.value)}>
+          <select value={eventId} onChange={(e) => setEventId(e.target.value)} disabled={events.isLoading}>
             <option value="">Select an event</option>
             {(events.data ?? []).map((ev) => (
               <option key={ev.id} value={ev.id}>{ev.title}{ev.location ? ` — ${ev.location}` : ''}</option>
             ))}
           </select>
         </label>
+        {events.data?.length === 0 && (
+          <p className="muted" style={{ marginTop: -8 }}>
+            No assigned events yet. Ask an organizer to add this staff account to an event.
+          </p>
+        )}
         <label>Event ID<input value={eventId} onChange={(e) => setEventId(e.target.value)} required placeholder="event uuid" /></label>
         <label>Ticket code<input value={token} onChange={(e) => setToken(e.target.value)} required autoFocus placeholder="paste or scan" /></label>
         <button className="primary" type="submit" disabled={busy || !eventId || !token}>Scan</button>
