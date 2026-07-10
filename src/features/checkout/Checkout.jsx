@@ -79,9 +79,11 @@ export default function Checkout({ category, onClose }) {
     queryKey: ['order', orderId],
     queryFn: () => apiGet(`/orders/${orderId}`),
     enabled: !!orderId,
-    refetchInterval: (q) => (q.state.data?.status === 'paid' ? false : 1500),
+    refetchInterval: (q) => (['paid', 'failed', 'refunded'].includes(q.state.data?.status) ? false : 1500),
   });
   const paid = poll.data?.status === 'paid';
+  const failed = poll.data?.status === 'failed';
+  const refunded = poll.data?.status === 'refunded';
   useEffect(() => { if (paid && orderId) navigate(`/orders/${orderId}`); }, [paid, orderId, navigate]);
 
   const step = (d) => setQty((q) => Math.min(maxQty, Math.max(1, q + d)));
@@ -152,9 +154,13 @@ export default function Checkout({ category, onClose }) {
 
         {orderId && (
           <p className="mono" style={{ fontSize: '0.92rem', color: paid ? 'var(--accent)' : 'var(--muted)' }}>
-            {paid ? 'Paid — redirecting…' : 'Finalizing your order…'}
+            {paid && 'Paid — redirecting…'}
+            {failed && 'Payment failed — no tickets were issued.'}
+            {refunded && 'This order has been refunded.'}
+            {!paid && !failed && !refunded && 'Finalizing your order…'}
           </p>
         )}
+        {failed && <button onClick={() => { setOrderId(null); setReservation(null); }}>Start again</button>}
       </div>
     </div>
   );
