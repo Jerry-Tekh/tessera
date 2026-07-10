@@ -11,6 +11,7 @@ import MyTickets from './pages/MyTickets.jsx';
 import OrganizerDashboard from './pages/OrganizerDashboard.jsx';
 import OrganizerEvent from './pages/OrganizerEvent.jsx';
 import Scanner from './pages/Scanner.jsx';
+import AdminUsers from './pages/AdminUsers.jsx';
 import SystemHealth from './components/SystemHealth.jsx';
 import { RequireAuth, RequireRole } from './components/RouteGuards.jsx';
 
@@ -32,6 +33,7 @@ function Nav() {
           <>
             {(user.role === 'organizer' || user.role === 'super_admin') && <NavLink to="/organizer" style={link} onClick={close}>Organizer</NavLink>}
             {(user.role === 'event_staff' || user.role === 'super_admin') && <NavLink to="/scan" style={link} onClick={close}>Scan</NavLink>}
+            {user.role === 'super_admin' && <NavLink to="/admin/users" style={link} onClick={close}>Users</NavLink>}
             <NavLink to="/tickets" style={link} onClick={close}>My tickets</NavLink>
             <NavLink to="/account" style={link} onClick={close}>Account</NavLink>
             <span className="mono" style={{ color: 'var(--faint)', fontSize: '0.74rem' }}>{user.email}</span>
@@ -72,6 +74,7 @@ export default function App() {
           <Route path="/organizer" element={<RequireRole roles={['organizer', 'super_admin']}><OrganizerDashboard /></RequireRole>} />
           <Route path="/organizer/events/:id" element={<RequireRole roles={['organizer', 'super_admin']}><OrganizerEvent /></RequireRole>} />
           <Route path="/scan" element={<RequireRole roles={['event_staff', 'super_admin']}><Scanner /></RequireRole>} />
+          <Route path="/admin/users" element={<RequireRole roles={['super_admin']}><AdminUsers /></RequireRole>} />
         </Routes>
       </main>
       <footer style={{ borderTop: '1px solid var(--border)', padding: '28px', display: 'flex', justifyContent: 'center' }}>
