@@ -28,6 +28,8 @@ describe('OrganizerEvent', () => {
       http.get('/api/v1/events/e1', () => HttpResponse.json({ success: true, data: { ...draft, status } })),
       http.get('/api/v1/events/e1/sales', () => HttpResponse.json({ success: true, data: sales })),
       http.get('/api/v1/events/e1/orders', () => HttpResponse.json({ success: true, data: [] })),
+      http.get('/api/v1/events/e1/refund-requests', () => HttpResponse.json({ success: true, data: [] })),
+      http.get('/api/v1/events/e1/staff', () => HttpResponse.json({ success: true, data: [] })),
       http.patch('/api/v1/events/e1', async ({ request }) => { const b = await request.json(); status = b.status ?? status; return HttpResponse.json({ success: true, data: { ...draft, status } }); }),
     );
     renderAt('e1');
@@ -35,7 +37,7 @@ describe('OrganizerEvent', () => {
     expect(screen.getByText(/3 sold/i)).toBeInTheDocument();
     expect(screen.getByText(/\$45\.00/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /publish/i }));
-    expect(await screen.findByText(/status: published/i)).toBeInTheDocument();
+    expect(await screen.findByText(/^published$/i, { selector: '.badge' })).toBeInTheDocument();
   });
 
   it('adds a ticket category', async () => {
@@ -44,6 +46,8 @@ describe('OrganizerEvent', () => {
       http.get('/api/v1/events/e1', () => HttpResponse.json({ success: true, data: { ...draft, categories } })),
       http.get('/api/v1/events/e1/sales', () => HttpResponse.json({ success: true, data: sales })),
       http.get('/api/v1/events/e1/orders', () => HttpResponse.json({ success: true, data: [] })),
+      http.get('/api/v1/events/e1/refund-requests', () => HttpResponse.json({ success: true, data: [] })),
+      http.get('/api/v1/events/e1/staff', () => HttpResponse.json({ success: true, data: [] })),
       http.post('/api/v1/events/e1/categories', async ({ request }) => {
         const b = await request.json();
         const c = { id: 'c1', event_id: 'e1', name: b.name, price_cents: b.priceCents, total_quantity: b.totalQuantity, available_quantity: b.totalQuantity, max_per_customer: 10, sales_open_at: null, sales_close_at: null };
@@ -67,6 +71,8 @@ describe('OrganizerEvent', () => {
       http.get('/api/v1/events/e1', () => HttpResponse.json({ success: true, data: { ...draft, status: 'published' } })),
       http.get('/api/v1/events/e1/sales', () => HttpResponse.json({ success: true, data: sales })),
       http.get('/api/v1/events/e1/orders', () => HttpResponse.json({ success: true, data: orders })),
+      http.get('/api/v1/events/e1/refund-requests', () => HttpResponse.json({ success: true, data: [] })),
+      http.get('/api/v1/events/e1/staff', () => HttpResponse.json({ success: true, data: [] })),
       http.post('/api/v1/orders/o1/refund', () => {
         refunded = true;
         orders = orders.map((o) => ({ ...o, status: 'refunded' }));

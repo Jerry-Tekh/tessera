@@ -91,28 +91,28 @@ export default function Checkout({ category, onClose }) {
   return (
     <div
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(6,6,7,0.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(15, 23, 42, 0.52)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
     >
-      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={`Checkout — ${category.name}`} className="reveal" style={{ width: 'min(440px, 100%)', background: 'var(--surface)', border: '1px solid var(--line-strong)', boxShadow: 'var(--shadow)', padding: 28, outline: 'none' }}>
+      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={`Checkout — ${category.name}`} className="panel reveal" style={{ width: 'min(480px, 100%)', padding: 28, outline: 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
           <div>
             <span className="eyebrow">Checkout</span>
-            <h2 style={{ margin: '8px 0 0' }}>{category.name}</h2>
-            <span className="mono muted" style={{ fontSize: '0.82rem' }}>{money(category.price_cents)} each</span>
+            <h2 style={{ marginTop: 8 }}>{category.name}</h2>
+            <span className="mono muted" style={{ fontSize: '0.86rem' }}>{money(category.price_cents)} each</span>
           </div>
-          <button onClick={onClose} aria-label="Close" style={{ padding: '6px 11px', border: '1px solid var(--border)' }}>✕</button>
+          <button className="ghost" onClick={onClose} aria-label="Close" style={{ padding: '7px 11px' }}>Close</button>
         </div>
 
         <hr className="rule" style={{ margin: '20px 0' }} />
-        {err && <p style={{ color: 'var(--danger)', fontSize: '0.88rem' }}>{err}</p>}
+        {err && <p className="alert danger" style={{ marginBottom: 14 }}>{err}</p>}
 
         {!reservation && (
-          <div style={{ display: 'grid', gap: 18 }}>
+          <div className="stack">
             <div>
               <label>Quantity</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 8 }}>
-                <button type="button" aria-label="Decrease quantity" onClick={() => step(-1)} disabled={qty <= 1} style={{ width: 42, padding: '8px 0', fontSize: '1.1rem' }}>−</button>
-                <span className="mono" style={{ fontSize: '1.3rem', minWidth: 24, textAlign: 'center' }}>{qty}</span>
+                <button type="button" aria-label="Decrease quantity" onClick={() => step(-1)} disabled={qty <= 1} style={{ width: 42, padding: '8px 0', fontSize: '1.1rem' }}>-</button>
+                <span className="mono" style={{ fontSize: '1.3rem', minWidth: 24, textAlign: 'center', fontWeight: 800 }}>{qty}</span>
                 <button type="button" aria-label="Increase quantity" onClick={() => step(1)} disabled={qty >= maxQty} style={{ width: 42, padding: '8px 0', fontSize: '1.1rem' }}>+</button>
                 <span className="mono muted" style={{ fontSize: '0.74rem' }}>max {maxQty}</span>
               </div>
@@ -121,9 +121,9 @@ export default function Checkout({ category, onClose }) {
               <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" />
             </label>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '12px 0', borderTop: '1px solid var(--border)' }}>
+            <div className="between" style={{ padding: '14px 0', borderTop: '1px solid var(--border)' }}>
               <span className="mono muted" style={{ fontSize: '0.82rem' }}>{qty} × {money(category.price_cents)}</span>
-              <span className="mono" style={{ fontSize: '1.2rem' }}>{money(total)}</span>
+              <span className="mono" style={{ fontSize: '1.2rem', fontWeight: 800 }}>{money(total)}</span>
             </div>
 
             <button className="primary" disabled={!email} onClick={reserve}>Reserve</button>
@@ -131,29 +131,29 @@ export default function Checkout({ category, onClose }) {
         )}
 
         {reservation && !orderId && (
-          <div style={{ display: 'grid', gap: 16 }}>
+          <div className="stack">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span className="mono muted" style={{ fontSize: '0.82rem' }}>
                 {qty} ticket{qty === 1 ? '' : 's'} · {liveReservation.status}
               </span>
-              <span className="mono" style={{ fontSize: '1.2rem' }}>{money(total)}</span>
+              <span className="mono" style={{ fontSize: '1.2rem', fontWeight: 800 }}>{money(total)}</span>
             </div>
             {canPay ? (
-              <p className="mono" style={{ fontSize: '0.9rem' }}>
-                Hold expires in <span style={{ color: 'var(--accent)' }}><Countdown deadline={liveReservation.expires_at} onExpire={() => { setReservation(null); setErr('Your hold expired. Please start again.'); }} /></span>
+              <p className="alert" style={{ fontSize: '0.9rem' }}>
+                Hold expires in <span className="mono"><Countdown deadline={liveReservation.expires_at} onExpire={() => { setReservation(null); setErr('Your hold expired. Please start again.'); }} /></span>
               </p>
             ) : (
               <p className="muted" style={{ fontSize: '0.9rem' }}>This hold is no longer payable. Start again to reserve fresh tickets.</p>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="primary" onClick={pay} disabled={!canPay}>Pay {money(total)}</button>
-              <button onClick={cancelHold} disabled={cancelling}>{cancelling ? 'Cancelling…' : 'Cancel hold'}</button>
+              <button className="ghost" onClick={cancelHold} disabled={cancelling}>{cancelling ? 'Cancelling…' : 'Cancel hold'}</button>
             </div>
           </div>
         )}
 
         {orderId && (
-          <p className="mono" style={{ fontSize: '0.92rem', color: paid ? 'var(--accent)' : 'var(--muted)' }}>
+          <p className={`alert ${paid ? 'ok' : ''}`} style={{ fontSize: '0.92rem' }}>
             {paid && 'Paid — redirecting…'}
             {failed && 'Payment failed — no tickets were issued.'}
             {refunded && 'This order has been refunded.'}

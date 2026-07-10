@@ -32,28 +32,30 @@ export default function Login() {
   }
 
   return (
-    <div className="reveal" style={{ maxWidth: 400, margin: '40px auto', border: '1px solid var(--border)', background: 'var(--surface)', padding: 36 }}>
-      <span className="eyebrow">Welcome back</span>
-      <h1 style={{ fontSize: '2.4rem', margin: '12px 0 24px' }}>Log in</h1>
-      {err && <p style={{ color: 'var(--danger)', fontSize: '0.9rem' }}>{err}</p>}
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 18 }}>
-        <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-        <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
-        <button className="primary" disabled={busy} type="submit">Log in</button>
-      </form>
-      <div style={{ marginTop: 24, display: 'grid', gap: 10 }}>
-        <span className="eyebrow">Demo roles</span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 8 }}>
-          {DEMO_CREDENTIALS.map((demo) => (
-            <button key={demo.role} type="button" onClick={() => fillDemo(demo.email)}>
-              {demo.label}
-            </button>
-          ))}
+    <div className="auth-wrap reveal">
+      <section className="auth-card panel">
+        <span className="eyebrow">Welcome back</span>
+        <h1 style={{ fontSize: '2.2rem', marginTop: 10 }}>Log in</h1>
+        {err && <p className="alert danger" style={{ marginTop: 16 }}>{err}</p>}
+        <form onSubmit={onSubmit} className="stack" style={{ marginTop: 22 }}>
+          <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+          <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+          <button className="primary" disabled={busy} type="submit">{busy ? 'Logging in…' : 'Log in'}</button>
+        </form>
+        <div className="stack" style={{ marginTop: 24 }}>
+          <span className="eyebrow">Demo roles</span>
+          <div className="grid-2" style={{ gap: 8 }}>
+            {DEMO_CREDENTIALS.map((demo) => (
+              <button key={demo.role} type="button" className="ghost" onClick={() => fillDemo(demo.email)}>
+                {demo.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <p className="muted" style={{ marginTop: 22, fontSize: '0.9rem' }}>
-        No account? <Link to="/register" style={{ color: 'var(--accent)' }}>Create one</Link>
-      </p>
+        <p className="muted" style={{ marginTop: 22, fontSize: '0.9rem' }}>
+          No account? <Link to="/register" style={{ color: 'var(--accent)', fontWeight: 800 }}>Create one</Link>
+        </p>
+      </section>
     </div>
   );
 }

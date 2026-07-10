@@ -25,43 +25,45 @@ export default function AdminUsers() {
   });
 
   return (
-    <div className="reveal">
-      <span className="eyebrow">Super admin</span>
-      <h1 style={{ marginTop: 12 }}>Users</h1>
+    <div className="page reveal">
+      <header className="page-hero">
+        <span className="eyebrow">Super admin</span>
+        <h1>Users</h1>
+        <p>Review account roles and update access levels for the platform.</p>
+      </header>
       {message && (
-        <p role="status" style={{ marginBottom: 18, color: message.ok ? 'var(--accent)' : 'var(--danger)' }}>
+        <p role="status" className={`alert ${message.ok ? 'ok' : 'danger'}`}>
           {message.text}
         </p>
       )}
 
       {isLoading ? <p className="muted">Loading users…</p> : (
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        <section className="table-card card">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
           {(users ?? []).map((u) => {
             const nextRole = pendingRoles[u.id] ?? u.role;
             return (
-              <li
-                key={u.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))',
-                  gap: 14,
-                  alignItems: 'center',
-                  padding: '16px 2px',
-                  borderBottom: '1px solid var(--border)',
-                }}
-              >
-                <span>
-                  <span style={{ fontWeight: 700 }}>{u.name}</span>
-                  <span className="mono muted" style={{ display: 'block', fontSize: '0.76rem', marginTop: 3 }}>
-                    {u.email}
-                  </span>
-                </span>
+              <tr key={u.id}>
+                <td><strong>{u.name}</strong><span className="mono muted" style={{ display: 'block', fontSize: '0.72rem' }}>{u.id}</span></td>
+                <td>{u.email}</td>
+                <td>
                 <label>
                   Role
                   <select value={nextRole} onChange={(e) => setPendingRoles((prev) => ({ ...prev, [u.id]: e.target.value }))}>
                     {ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
                   </select>
                 </label>
+                </td>
+                <td>
                 <button
                   type="button"
                   disabled={nextRole === u.role || roleChange.isPending}
@@ -72,10 +74,13 @@ export default function AdminUsers() {
                 >
                   Save
                 </button>
-              </li>
+                </td>
+              </tr>
             );
           })}
-        </ul>
+          </tbody>
+        </table>
+        </section>
       )}
     </div>
   );

@@ -27,19 +27,21 @@ export default function Register() {
   }
 
   return (
-    <div className="reveal" style={{ maxWidth: 400, margin: '40px auto', border: '1px solid var(--border)', background: 'var(--surface)', padding: 36 }}>
-      <span className="eyebrow">Join Tessera</span>
-      <h1 style={{ fontSize: '2.4rem', margin: '12px 0 24px' }}>Create account</h1>
-      {err && <p style={{ color: 'var(--danger)', fontSize: '0.9rem' }}>{err}</p>}
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 18 }}>
-        <label>Name<input value={name} onChange={(e) => setName(e.target.value)} required /></label>
-        <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-        <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={10} /></label>
-        <button className="primary" disabled={busy} type="submit">Create account</button>
-      </form>
-      <p className="muted" style={{ marginTop: 22, fontSize: '0.9rem' }}>
-        Have an account? <Link to="/login" style={{ color: 'var(--accent)' }}>Log in</Link>
-      </p>
+    <div className="auth-wrap reveal">
+      <section className="auth-card panel">
+        <span className="eyebrow">Join Tessera</span>
+        <h1 style={{ fontSize: '2.2rem', marginTop: 10 }}>Create account</h1>
+        {err && <p className="alert danger" style={{ marginTop: 16 }}>{err}</p>}
+        <form onSubmit={onSubmit} className="stack" style={{ marginTop: 22 }}>
+          <label>Name<input value={name} onChange={(e) => setName(e.target.value)} required /></label>
+          <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+          <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={10} /></label>
+          <button className="primary" disabled={busy} type="submit">{busy ? 'Creating…' : 'Create account'}</button>
+        </form>
+        <p className="muted" style={{ marginTop: 22, fontSize: '0.9rem' }}>
+          Have an account? <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 800 }}>Log in</Link>
+        </p>
+      </section>
     </div>
   );
 }

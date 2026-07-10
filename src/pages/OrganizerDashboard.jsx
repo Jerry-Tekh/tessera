@@ -35,12 +35,37 @@ export default function OrganizerDashboard() {
   });
 
   return (
-    <div className="reveal">
-      <span className="eyebrow">Organizer</span>
-      <h1 style={{ marginTop: 12 }}>Dashboard</h1>
+    <div className="page reveal">
+      <header className="page-hero">
+        <span className="eyebrow">Organizer</span>
+        <h1>Dashboard</h1>
+        <p>Create events, manage inventory, and move quickly into event operations.</p>
+      </header>
+
+      <div className="grid-3">
+        <div className="section">
+          <span className="eyebrow">Events</span>
+          <h2 style={{ marginTop: 8 }}>{events?.length ?? 0}</h2>
+          <p className="muted">Total managed</p>
+        </div>
+        <div className="section">
+          <span className="eyebrow">Published</span>
+          <h2 style={{ marginTop: 8 }}>{(events ?? []).filter((event) => event.status === 'published').length}</h2>
+          <p className="muted">Visible to buyers</p>
+        </div>
+        <div className="section">
+          <span className="eyebrow">Drafts</span>
+          <h2 style={{ marginTop: 8 }}>{(events ?? []).filter((event) => event.status === 'draft').length}</h2>
+          <p className="muted">Awaiting publish</p>
+        </div>
+      </div>
 
       <form onSubmit={(e) => { e.preventDefault(); setErr(null); create.mutate(); }}
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 14, alignItems: 'end', margin: '24px 0', padding: 20, border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        className="section form-grid">
+        <div style={{ gridColumn: '1 / -1' }}>
+          <span className="eyebrow">New event</span>
+          <h2 style={{ marginTop: 6 }}>Create event</h2>
+        </div>
         <label style={{ flex: '1 1 240px' }}>Event title<input value={title} onChange={(e) => setTitle(e.target.value)} required /></label>
         <label>Location<input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Venue or city" /></label>
         <label>Starts at<input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} /></label>
@@ -50,25 +75,31 @@ export default function OrganizerDashboard() {
           </select>
         </label>
         <label style={{ gridColumn: '1 / -1' }}>Description<textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></label>
-        <button className="primary" type="submit" disabled={!title || create.isPending}>Create event</button>
+        <button className="primary" type="submit" disabled={!title || create.isPending}>{create.isPending ? 'Creating…' : 'Create event'}</button>
       </form>
-      {err && <p style={{ color: 'var(--danger)' }}>{err}</p>}
+      {err && <p className="alert danger">{err}</p>}
 
-      <h2 style={{ marginTop: 8 }}>All events</h2>
-      <hr className="rule" style={{ margin: '14px 0' }} />
+      <section className="section">
+      <div className="between">
+        <div>
+          <span className="eyebrow">Inventory</span>
+          <h2 style={{ marginTop: 6 }}>All events</h2>
+        </div>
+      </div>
       {isLoading ? <p className="muted">Loading events…</p> : (
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        <ul className="data-list" style={{ marginTop: 16 }}>
           {(events ?? []).map((ev) => (
-            <li key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 2px', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem' }}>{ev.title}</span>
-                <span className="badge">{ev.status}</span>
+            <li key={ev.id} className="data-row">
+              <span>
+                <strong>{ev.title}</strong>
+                <span className={`badge${ev.status === 'published' ? ' ok' : ''}`} style={{ marginLeft: 10 }}>{ev.status}</span>
               </span>
-              <Link to={`/organizer/events/${ev.id}`} className="eyebrow" style={{ color: 'var(--accent)' }}>Manage →</Link>
+              <Link to={`/organizer/events/${ev.id}`} className="btn ghost">Manage</Link>
             </li>
           ))}
         </ul>
       )}
+      </section>
     </div>
   );
 }

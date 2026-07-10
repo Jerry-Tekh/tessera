@@ -46,73 +46,85 @@ export default function Account() {
   });
 
   return (
-    <div className="reveal" style={{ maxWidth: 720 }}>
-      <span className="eyebrow">Your account</span>
-      <h1 style={{ marginTop: 12 }}>{user ? user.name : 'Account'}</h1>
+    <div className="page reveal">
+      <header className="page-hero">
+        <span className="eyebrow">Your account</span>
+        <h1>{user ? user.name : 'Account'}</h1>
       {user && (
-        <p className="mono muted" style={{ fontSize: '0.84rem' }}>
-          {user.email} · <span className="badge" style={{ marginLeft: 4 }}>{user.role}</span>
+        <p className="muted">
+          {user.email} <span className="badge" style={{ marginLeft: 8 }}>{user.role}</span>
         </p>
       )}
+      </header>
 
-      <section style={{ marginTop: 34, padding: 20, border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <h2>Profile</h2>
+      <section className="section">
+        <div className="between">
+          <div>
+            <span className="eyebrow">Profile</span>
+            <h2 style={{ marginTop: 6 }}>Personal details</h2>
+          </div>
+        </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             setProfileMessage(null);
             saveProfile.mutate();
           }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 14, alignItems: 'end', marginTop: 16 }}
+          className="form-grid"
+          style={{ marginTop: 18 }}
         >
           <label>Name<input value={name} onChange={(e) => setName(e.target.value)} required /></label>
           <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-          <button className="primary" type="submit" disabled={!name || !email || saveProfile.isPending}>Save profile</button>
+          <button className="primary" type="submit" disabled={!name || !email || saveProfile.isPending}>{saveProfile.isPending ? 'Saving…' : 'Save profile'}</button>
         </form>
         {profileMessage && (
-          <p role="status" style={{ marginTop: 12, color: profileMessage.ok ? 'var(--accent)' : 'var(--danger)' }}>
+          <p role="status" className={`alert ${profileMessage.ok ? 'ok' : 'danger'}`} style={{ marginTop: 14 }}>
             {profileMessage.text}
           </p>
         )}
       </section>
 
-      <section style={{ marginTop: 20, padding: 20, border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <h2>Password</h2>
+      <section className="section">
+        <span className="eyebrow">Password</span>
+        <h2 style={{ marginTop: 6 }}>Security</h2>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             setPasswordMessage(null);
             savePassword.mutate();
           }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 14, alignItems: 'end', marginTop: 16 }}
+          className="form-grid"
+          style={{ marginTop: 18 }}
         >
           <label>Current password<input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required /></label>
           <label>New password<input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={10} /></label>
-          <button type="submit" disabled={!currentPassword || !newPassword || savePassword.isPending}>Change password</button>
+          <button type="submit" disabled={!currentPassword || !newPassword || savePassword.isPending}>{savePassword.isPending ? 'Changing…' : 'Change password'}</button>
         </form>
         {passwordMessage && (
-          <p role="status" style={{ marginTop: 12, color: passwordMessage.ok ? 'var(--accent)' : 'var(--danger)' }}>
+          <p role="status" className={`alert ${passwordMessage.ok ? 'ok' : 'danger'}`} style={{ marginTop: 14 }}>
             {passwordMessage.text}
           </p>
         )}
       </section>
 
-      <h2 style={{ marginTop: 40 }}>Active sessions</h2>
-      <hr className="rule" style={{ margin: '14px 0' }} />
-      {isLoading && <p className="muted">Loading sessions…</p>}
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      <section className="section">
+        <span className="eyebrow">Sessions</span>
+        <h2 style={{ marginTop: 6 }}>Active sessions</h2>
+      {isLoading && <p className="muted" style={{ marginTop: 14 }}>Loading sessions…</p>}
+      <ul className="data-list" style={{ marginTop: 16 }}>
         {(sessions ?? []).map((s) => (
-          <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '16px 2px', borderBottom: '1px solid var(--border)' }}>
+          <li key={s.id} className="data-row">
             <span>
               <span style={{ fontWeight: 600 }}>{s.user_agent || 'Unknown device'}</span>
               <span className="mono muted" style={{ display: 'block', fontSize: '0.74rem', marginTop: 3 }}>
                 {s.ip} · last used {s.last_used_at ? new Date(s.last_used_at).toLocaleString() : '—'}
               </span>
             </span>
-            <button onClick={() => revoke.mutate(s.id)} disabled={revoke.isPending}>Revoke</button>
+            <button className="danger" onClick={() => revoke.mutate(s.id)} disabled={revoke.isPending}>Revoke</button>
           </li>
         ))}
       </ul>
+      </section>
     </div>
   );
 }

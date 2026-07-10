@@ -30,5 +30,5 @@ export default function CameraScanner({ onDecode, onError }) {
     };
   }, [onDecode, onError]);
 
-  return <div id="qr-camera" ref={ref} style={{ width: '100%', maxWidth: 360, border: '1px solid var(--border)' }} />;
+  return <div id="qr-camera" ref={ref} style={{ width: '100%', maxWidth: 420, overflow: 'hidden', borderRadius: 'var(--radius)' }} />;
 }

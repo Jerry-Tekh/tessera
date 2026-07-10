@@ -5,7 +5,8 @@ import { apiGet } from '../lib/api';
 import { heroFor } from '../lib/images';
 
 const PAGE = 8;
-const fmtDate = (s) => (s ? new Date(s).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBA');
+const fmtDate = (s) => (s ? new Date(s).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Date TBA');
+const fmtFullDate = (s) => (s ? new Date(s).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBA');
 
 export default function Browse() {
   const [q, setQ] = useState('');
@@ -31,50 +32,59 @@ export default function Browse() {
   }, [data, q, sort]);
 
   return (
-    <div>
-      <header className="reveal" style={{ marginBottom: 34, maxWidth: 760 }}>
+    <div className="page">
+      <header className="page-hero reveal">
         <span className="eyebrow">Now on sale</span>
-        <h1 style={{ marginTop: 14 }}>Nights worth<br />remembering.</h1>
-        <p className="muted" style={{ fontSize: '1.05rem', maxWidth: 520 }}>
+        <h1>Find your next live moment.</h1>
+        <p>
           Concerts, festivals and one-off happenings. Secure seats in seconds — guest checkout, instant QR tickets.
         </p>
       </header>
 
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 26 }}>
+      <section className="panel" style={{ padding: 18 }}>
+        <div className="row" style={{ alignItems: 'end' }}>
+        <label style={{ flex: '1 1 300px' }}>Search
         <input
           aria-label="Search events"
           placeholder="Search events or venues…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          style={{ flex: '1 1 280px', maxWidth: 420 }}
         />
-        <select aria-label="Sort events" value={sort} onChange={(e) => setSort(e.target.value)} style={{ width: 'auto' }}>
+        </label>
+        <label style={{ width: 190 }}>Sort
+        <select aria-label="Sort events" value={sort} onChange={(e) => setSort(e.target.value)}>
           <option value="date">Soonest first</option>
           <option value="name">A–Z</option>
         </select>
-      </div>
+        </label>
+        </div>
+        <div className="row" style={{ marginTop: 14 }}>
+          {['All', 'Music', 'Culture', 'Festival'].map((item) => <span key={item} className="badge">{item}</span>)}
+        </div>
+      </section>
 
       {isLoading && <p className="muted">Loading events…</p>}
       {error && <p className="muted">Could not load events.</p>}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(320px,1fr))', gap: 22 }}>
+      <div className="event-grid">
         {events.map((ev, i) => (
           <Link
             key={ev.id}
             to={`/events/${ev.id}`}
-            className="reveal"
-            style={{ display: 'block', position: 'relative', aspectRatio: '4 / 5', overflow: 'hidden', border: '1px solid var(--border)', animationDelay: `${(i % PAGE) * 70}ms` }}
+            className="event-card reveal"
+            style={{ animationDelay: `${(i % PAGE) * 70}ms` }}
           >
-            <img src={heroFor(ev.id)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(10,10,11,0.92) 8%, rgba(10,10,11,0.25) 45%, rgba(10,10,11,0.05) 100%)' }} />
-            <div style={{ position: 'absolute', left: 18, right: 18, bottom: 18 }}>
-              <span className="mono" style={{ fontSize: '0.72rem', color: 'var(--accent)', letterSpacing: '0.08em' }}>
-                {fmtDate(ev.starts_at)}{ev.location ? `  ·  ${ev.location}` : ''}
-              </span>
-              <h2 style={{ margin: '8px 0 0', fontSize: '1.7rem', lineHeight: 1.05 }}>{ev.title}</h2>
-              <span style={{ display: 'inline-block', marginTop: 14, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text)' }}>
-                Get tickets →
-              </span>
+            <div className="event-card-media">
+              <img src={heroFor(ev.id)} alt="" />
+              <span className="date-chip">{fmtDate(ev.starts_at)}</span>
+            </div>
+            <div className="event-card-body">
+              <h2 className="event-card-title">{ev.title}</h2>
+              <p className="event-meta">{fmtFullDate(ev.starts_at)}{ev.location ? ` · ${ev.location}` : ''}</p>
+              <div className="between" style={{ marginTop: 4 }}>
+                <span className="badge ok">On sale</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 800 }}>Get tickets</span>
+              </div>
             </div>
           </Link>
         ))}
@@ -85,7 +95,7 @@ export default function Browse() {
       )}
 
       {hasNextPage && !q && (
-        <div style={{ textAlign: 'center', marginTop: 34 }}>
+        <div style={{ textAlign: 'center' }}>
           <button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
             {isFetchingNextPage ? 'Loading…' : 'Load more events'}
           </button>

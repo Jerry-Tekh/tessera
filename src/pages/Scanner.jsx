@@ -36,23 +36,19 @@ export default function Scanner() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto' }}>
-      <span className="eyebrow">Event-day gate</span>
-      <h1 style={{ marginTop: 12 }}>Scanner</h1>
+    <div className="scanner-shell page">
+      <header className="page-hero" style={{ textAlign: 'center', margin: '0 auto' }}>
+        <span className="eyebrow" style={{ justifyContent: 'center' }}>Event-day gate</span>
+        <h1>Scanner</h1>
+      </header>
 
       {result && (
-        <div role="status" className="reveal" style={{
-          padding: '26px 20px', margin: '18px 0', textAlign: 'center',
-          fontFamily: 'var(--font-display)', fontSize: '1.7rem', fontWeight: 600,
-          color: result.ok ? 'var(--accent-ink)' : '#fff',
-          background: result.ok ? 'var(--accent)' : 'var(--danger)',
-          border: `1px solid ${result.ok ? 'var(--accent)' : 'var(--danger)'}`,
-        }}>
+        <div role="status" className={`scanner-result reveal ${result.ok ? 'ok' : 'danger'}`}>
           {result.message}
         </div>
       )}
 
-      <form onSubmit={(e) => { e.preventDefault(); doScan(token); }} style={{ display: 'grid', gap: 16, marginTop: 8 }}>
+      <form className="panel stack" onSubmit={(e) => { e.preventDefault(); doScan(token); }} style={{ padding: 22 }}>
         <label>Event
           <select value={eventId} onChange={(e) => setEventId(e.target.value)} disabled={events.isLoading}>
             <option value="">Select an event</option>
@@ -71,10 +67,10 @@ export default function Scanner() {
         <button className="primary" type="submit" disabled={busy || !eventId || !token}>Scan</button>
       </form>
 
-      <button type="button" onClick={() => setCamera((c) => !c)} disabled={!eventId} style={{ marginTop: 14, width: '100%' }}>
+      <button type="button" className="ghost" onClick={() => setCamera((c) => !c)} disabled={!eventId} style={{ width: '100%' }}>
         {camera ? 'Stop camera' : 'Use camera'}
       </button>
-      {camera && <div style={{ marginTop: 14 }}><CameraScanner onDecode={onDecode} onError={onCamError} /></div>}
+      {camera && <div className="camera-frame"><CameraScanner onDecode={onDecode} onError={onCamError} /></div>}
     </div>
   );
 }

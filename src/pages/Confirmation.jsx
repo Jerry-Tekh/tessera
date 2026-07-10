@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../lib/api';
 import QrCode from '../components/QrCode.jsx';
@@ -15,51 +15,59 @@ export default function Confirmation() {
   if (isLoading || !data) return <p className="muted">Loading order…</p>;
   if (data.status === 'failed') {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 0' }}>
-        <span className="eyebrow" style={{ color: 'var(--danger)' }}>Payment failed</span>
+      <div className="panel reveal" style={{ textAlign: 'center', padding: '54px 24px', maxWidth: 760, margin: '0 auto' }}>
+        <span className="badge danger">Payment failed</span>
         <h1 style={{ marginTop: 12 }}>Your order could not be completed.</h1>
-        <p className="muted">No tickets were issued. Please return to the event and try again.</p>
+        <p className="muted" style={{ marginTop: 10 }}>No tickets were issued. Please return to the event and try again.</p>
       </div>
     );
   }
   if (data.status === 'refunded') {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 0' }}>
-        <span className="eyebrow">Refunded</span>
+      <div className="panel reveal" style={{ textAlign: 'center', padding: '54px 24px', maxWidth: 760, margin: '0 auto' }}>
+        <span className="badge warn">Refunded</span>
         <h1 style={{ marginTop: 12 }}>This order has been refunded.</h1>
-        <p className="muted">Issued tickets for this order are no longer valid for entry.</p>
+        <p className="muted" style={{ marginTop: 10 }}>Issued tickets for this order are no longer valid for entry.</p>
       </div>
     );
   }
   if (data.status !== 'paid') {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 0' }}>
-        <span className="eyebrow">Processing</span>
+      <div className="panel reveal" style={{ textAlign: 'center', padding: '54px 24px', maxWidth: 760, margin: '0 auto' }}>
+        <span className="badge">Processing</span>
         <h1 style={{ marginTop: 12 }}>Finalizing your order…</h1>
-        <p className="muted">Reversing the charge and minting your tickets. This only takes a moment.</p>
+        <p className="muted" style={{ marginTop: 10 }}>Reversing the charge and minting your tickets. This only takes a moment.</p>
       </div>
     );
   }
 
   return (
-    <div className="reveal">
-      <span className="eyebrow" style={{ color: 'var(--accent)' }}>Confirmed</span>
-      <h1 style={{ marginTop: 12 }}>You're in.</h1>
-      <p className="mono muted" style={{ fontSize: '0.82rem', letterSpacing: '0.04em' }}>
-        ORDER {data.id.slice(0, 8).toUpperCase()} · {money(data.amount_cents)} · {(data.tickets ?? []).length} TICKET(S)
-      </p>
+    <div className="page reveal">
+      <section className="panel" style={{ padding: 28 }}>
+        <div className="between" style={{ alignItems: 'start' }}>
+          <div>
+            <span className="badge ok">Confirmed</span>
+            <h1 style={{ marginTop: 12 }}>You're in.</h1>
+            <p className="mono muted" style={{ marginTop: 8, fontSize: '0.86rem' }}>
+              ORDER {data.id.slice(0, 8).toUpperCase()} · {money(data.amount_cents)} · {(data.tickets ?? []).length} TICKET(S)
+            </p>
+          </div>
+          <Link to="/tickets" className="btn primary">View in Wallet</Link>
+        </div>
+      </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 20, marginTop: 32 }}>
+      <div className="grid-2">
         {(data.tickets ?? []).map((t, i) => (
-          <div key={t.id} className="reveal" style={{ display: 'flex', border: '1px solid var(--line-strong)', background: 'var(--surface)', animationDelay: `${i * 80}ms` }}>
-            <div style={{ flex: 1, padding: '20px 18px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div key={t.id} className="ticket-card card reveal" style={{ animationDelay: `${i * 80}ms` }}>
+            <div style={{ padding: 22, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 220 }}>
               <div>
                 <span className="eyebrow">Admit one</span>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginTop: 8 }}>Tessera</div>
+                <h2 style={{ marginTop: 8 }}>Tessera</h2>
+                <p className="mono muted" style={{ marginTop: 8, fontSize: '0.78rem' }}>{t.id.slice(0, 8).toUpperCase()}</p>
               </div>
               <span className="badge ok" style={{ alignSelf: 'flex-start', marginTop: 18 }}>{t.status}</span>
             </div>
-            <div style={{ borderLeft: '2px dashed var(--line-strong)', padding: 14, background: '#fff', display: 'flex', alignItems: 'center' }}>
+            <div style={{ borderLeft: '2px dashed var(--border)', padding: 18, background: '#fff', display: 'flex', alignItems: 'center' }}>
               <QrCode value={t.qr_token} />
             </div>
           </div>

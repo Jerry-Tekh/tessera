@@ -20,27 +20,23 @@ function Nav() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
-  const link = ({ isActive }) => ({
-    fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase',
-    color: isActive ? 'var(--accent)' : 'var(--muted)', paddingBottom: 2,
-    borderBottom: isActive ? '1px solid var(--accent)' : '1px solid transparent',
-  });
+  const link = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`;
   return (
     <>
-      <button className="nav-toggle" aria-label="Toggle menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>☰</button>
+      <button className="nav-toggle" aria-label="Toggle menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>Menu</button>
       <div className={`nav ${open ? 'open' : ''}`}>
         {user ? (
           <>
-            {(user.role === 'organizer' || user.role === 'super_admin') && <NavLink to="/organizer" style={link} onClick={close}>Organizer</NavLink>}
-            {(user.role === 'event_staff' || user.role === 'super_admin') && <NavLink to="/scan" style={link} onClick={close}>Scan</NavLink>}
-            {user.role === 'super_admin' && <NavLink to="/admin/users" style={link} onClick={close}>Users</NavLink>}
-            <NavLink to="/tickets" style={link} onClick={close}>My tickets</NavLink>
-            <NavLink to="/account" style={link} onClick={close}>Account</NavLink>
-            <span className="mono" style={{ color: 'var(--faint)', fontSize: '0.74rem' }}>{user.email}</span>
-            <button onClick={async () => { close(); await logout(); navigate('/'); }}>Log out</button>
+            {(user.role === 'organizer' || user.role === 'super_admin') && <NavLink to="/organizer" className={link} onClick={close}>Organizer</NavLink>}
+            {(user.role === 'event_staff' || user.role === 'super_admin') && <NavLink to="/scan" className={link} onClick={close}>Scan</NavLink>}
+            {user.role === 'super_admin' && <NavLink to="/admin/users" className={link} onClick={close}>Users</NavLink>}
+            <NavLink to="/tickets" className={link} onClick={close}>My tickets</NavLink>
+            <NavLink to="/account" className={link} onClick={close}>Account</NavLink>
+            <span className="nav-email">{user.email}</span>
+            <button className="ghost" onClick={async () => { close(); await logout(); navigate('/'); }}>Log out</button>
           </>
         ) : (
-          <NavLink to="/login" style={link} onClick={close}>Log in</NavLink>
+          <NavLink to="/login" className={link} onClick={close}>Log in</NavLink>
         )}
       </div>
     </>
@@ -49,20 +45,17 @@ function Nav() {
 
 export default function App() {
   return (
-    <>
-      <header style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '18px 28px', borderBottom: '1px solid var(--border)',
-        background: 'rgba(10,10,11,0.72)', backdropFilter: 'blur(12px)',
-      }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ width: 11, height: 11, background: 'var(--accent)', display: 'inline-block' }} />
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.35rem', fontWeight: 600, letterSpacing: '0.02em' }}>Tessera</span>
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="app-header-inner">
+        <Link to="/" className="brand">
+          <span className="brand-mark">T</span>
+          <span className="brand-name">Tessera</span>
         </Link>
         <Nav />
+        </div>
       </header>
-      <main style={{ maxWidth: 'var(--maxw)', margin: '0 auto', padding: '40px 28px 80px' }}>
+      <main className="app-main">
         <Routes>
           <Route path="/" element={<Browse />} />
           <Route path="/events/:id" element={<EventDetail />} />
@@ -77,10 +70,12 @@ export default function App() {
           <Route path="/admin/users" element={<RequireRole roles={['super_admin']}><AdminUsers /></RequireRole>} />
         </Routes>
       </main>
-      <footer style={{ borderTop: '1px solid var(--border)', padding: '28px', display: 'flex', justifyContent: 'center' }}>
-        <span className="eyebrow">Tessera — Live Events</span>
+      <footer className="app-footer">
+        <div className="app-footer-inner">
+        <span className="eyebrow">Tessera Live Events</span>
         <SystemHealth />
+        </div>
       </footer>
-    </>
+    </div>
   );
 }
