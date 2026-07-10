@@ -1,12 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet } from '../lib/api';
 import { heroFor } from '../lib/images';
+import { listMyRefundRequests, requestRefund } from '../lib/refundApi';
+import { messageFor } from '../lib/errors';
 import QrCode from '../components/QrCode.jsx';
 
 const money = (c) => `$${(c / 100).toFixed(2)}`;
 
 export default function MyTickets() {
+  const qc = useQueryClient();
+  const [reasonByOrder, setReasonByOrder] = useState({});
+  const [err, setErr] = useState(null);
   const { data, isLoading, error } = useQuery({ queryKey: ['my-orders'], queryFn: () => apiGet('/orders') });
+  const refundRequests = useQuery({ queryKey: ['my-refund-requests'], queryFn: listMyRefundRequests });
+  const refundByOrder = useMemo(() => {
+    const map = new Map();
+    for (const req of refundRequests.data ?? []) {
+      if (!map.has(req.order_id)) map.set(req.order_id, req);
+    }
+    return map;
+  }, [refundRequests.data]);
+  const request = useMutation({
+    mutationFn: ({ orderId, reason }) => requestRefund(orderId, reason),
+    onSuccess: () => {
+      setErr(null);
+      setReasonByOrder({});
+      qc.invalidateQueries({ queryKey: ['my-refund-requests'] });
+    },
+    onError: (e) => setErr(messageFor(e)),
+  });
+
   if (isLoading) return <p className="muted">Loading your tickets…</p>;
   if (error) return <p className="muted">Could not load your tickets.</p>;
   if (!data.length) {
@@ -23,6 +47,7 @@ export default function MyTickets() {
     <div>
       <span className="eyebrow">Your tickets</span>
       <h1 style={{ marginTop: 12, marginBottom: 28 }}>Wallet</h1>
+      {err && <p style={{ color: 'var(--danger)' }}>{err}</p>}
 
       {data.map((o, i) => (
         <section key={o.id} className="reveal" style={{ border: '1px solid var(--border)', marginBottom: 24, animationDelay: `${i * 70}ms` }}>
@@ -41,6 +66,30 @@ export default function MyTickets() {
             {(o.tickets ?? []).map((t) => (
               <div key={t.id} style={{ background: '#fff', padding: 10, border: '1px solid var(--line-strong)' }}><QrCode value={t.qr_token} /></div>
             ))}
+          </div>
+          <div style={{ padding: '0 18px 18px' }}>
+            {refundByOrder.get(o.id) ? (
+              <p className="mono muted" style={{ fontSize: '0.78rem' }}>
+                Refund request: <span className="badge">{refundByOrder.get(o.id).status}</span>
+              </p>
+            ) : o.status === 'paid' ? (
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                request.mutate({ orderId: o.id, reason: reasonByOrder[o.id] ?? '' });
+              }} style={{ display: 'grid', gap: 10 }}>
+                <label>Refund reason
+                  <textarea
+                    value={reasonByOrder[o.id] ?? ''}
+                    onChange={(e) => setReasonByOrder((prev) => ({ ...prev, [o.id]: e.target.value }))}
+                    rows={2}
+                    required
+                  />
+                </label>
+                <button type="submit" disabled={request.isPending || !(reasonByOrder[o.id] ?? '').trim()}>
+                  Request refund
+                </button>
+              </form>
+            ) : null}
           </div>
         </section>
       ))}
