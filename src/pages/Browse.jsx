@@ -89,6 +89,8 @@ export default function Browse() {
       .sort((a, b) => (a.starts_at || '9999').localeCompare(b.starts_at || '9999'))
       .slice(0, 4);
   }, [allEvents]);
+  const hasEvents = events.length > 0;
+  const hasFeatured = featuredEvents.length > 0;
 
   function submitNewsletter(e) {
     e.preventDefault();
@@ -137,23 +139,37 @@ export default function Browse() {
           <span className="muted">Limited availability across curated drops.</span>
         </div>
 
-        <div className="featured-scroller">
-          {isLoading && [0, 1, 2].map((item) => <div key={item} className="featured-card skeleton-card" />)}
-          {!isLoading && featuredEvents.map((ev) => (
-            <Link key={ev.id} to={`/events/${ev.id}`} className="featured-card">
-              <img src={heroFor(ev.id)} alt="" />
-              <div className="featured-overlay" />
-              <div className="featured-content">
-                <span className="badge highlight">Limited Availability</span>
-                <div>
-                  <h3>{ev.title}</h3>
-                  <p>{fmtFullDate(ev.starts_at)}{ev.location ? ` · ${ev.location}` : ''}</p>
+        {error ? (
+          <div className="empty-state compact">
+            <span className="eyebrow">Events unavailable</span>
+            <h3>Featured events could not load.</h3>
+            <p>Check the API connection and try again.</p>
+          </div>
+        ) : !isLoading && !hasFeatured ? (
+          <div className="empty-state compact">
+            <span className="eyebrow">No featured events</span>
+            <h3>No published events yet.</h3>
+            <p>Published events from the backend will appear here automatically.</p>
+          </div>
+        ) : (
+          <div className="featured-scroller">
+            {isLoading && [0, 1, 2].map((item) => <div key={item} className="featured-card skeleton-card" />)}
+            {!isLoading && featuredEvents.map((ev) => (
+              <Link key={ev.id} to={`/events/${ev.id}`} className="featured-card">
+                <img src={heroFor(ev.id)} alt="" />
+                <div className="featured-overlay" />
+                <div className="featured-content">
+                  <span className="badge highlight">Limited Availability</span>
+                  <div>
+                    <h3>{ev.title}</h3>
+                    <p>{fmtFullDate(ev.starts_at)}{ev.location ? ` · ${ev.location}` : ''}</p>
+                  </div>
+                  <span className="btn primary">View Event</span>
                 </div>
-                <span className="btn primary">View Event</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="browse-section reveal" aria-labelledby="events-heading">
@@ -173,32 +189,36 @@ export default function Browse() {
       {isLoading && <p className="muted">Loading events…</p>}
       {error && <p className="muted">Could not load events.</p>}
 
-      <div className="event-grid">
-        {events.map((ev, i) => (
-          <Link
-            key={ev.id}
-            to={`/events/${ev.id}`}
-            className="event-card reveal"
-            style={{ animationDelay: `${(i % PAGE) * 70}ms` }}
-          >
-            <div className="event-card-media">
-              <img src={heroFor(ev.id)} alt="" />
-              <span className="date-chip">{fmtDate(ev.starts_at)}</span>
-            </div>
-            <div className="event-card-body">
-              <h2 className="event-card-title">{ev.title}</h2>
-              <p className="event-meta">{fmtFullDate(ev.starts_at)}{ev.location ? ` · ${ev.location}` : ''}</p>
-              <div className="between" style={{ marginTop: 4 }}>
-                <span className="badge ok">On sale</span>
-                <span style={{ color: 'var(--accent)', fontWeight: 800 }}>Get tickets</span>
+      {!isLoading && !error && !hasEvents ? (
+        <div className="empty-state">
+          <span className="eyebrow">No events available</span>
+          <h3>{q ? `No events match "${q}".` : 'No published events yet.'}</h3>
+          <p>{q ? 'Try another search term.' : 'Create or publish events in the organizer dashboard to make them available for buyers.'}</p>
+        </div>
+      ) : (
+        <div className="event-grid">
+          {events.map((ev, i) => (
+            <Link
+              key={ev.id}
+              to={`/events/${ev.id}`}
+              className="event-card reveal"
+              style={{ animationDelay: `${(i % PAGE) * 70}ms` }}
+            >
+              <div className="event-card-media">
+                <img src={heroFor(ev.id)} alt="" />
+                <span className="date-chip">{fmtDate(ev.starts_at)}</span>
               </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {!isLoading && !error && events.length === 0 && (
-        <p className="muted">{q ? `No events match “${q}”.` : 'No published events yet — check back soon.'}</p>
+              <div className="event-card-body">
+                <h2 className="event-card-title">{ev.title}</h2>
+                <p className="event-meta">{fmtFullDate(ev.starts_at)}{ev.location ? ` · ${ev.location}` : ''}</p>
+                <div className="between" style={{ marginTop: 4 }}>
+                  <span className="badge ok">On sale</span>
+                  <span style={{ color: 'var(--accent)', fontWeight: 800 }}>Get tickets</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       )}
 
       {hasNextPage && !q && (

@@ -26,6 +26,19 @@ describe('Browse', () => {
     renderPage();
     const results = await screen.findByRole('region', { name: /explore all events/i });
     expect(await within(results).findByText('Midnight Symphony')).toBeInTheDocument();
+    expect(await screen.findByText('Limited Availability')).toBeInTheDocument();
+  });
+
+  it('shows clear empty states when no published events are returned', async () => {
+    server.use(http.get('/api/v1/events', () => HttpResponse.json({
+      success: true,
+      data: [],
+      meta: { page: 1, pageSize: 8, count: 0 },
+    })));
+    renderPage();
+    expect(await screen.findByText(/no featured events/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no events available/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/no published events yet/i).length).toBeGreaterThan(0);
   });
 
   it('filters the grid by the search box', async () => {

@@ -458,6 +458,32 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 }
 .load-more-row { text-align: center; }
 
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 42px 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.empty-state.compact {
+  justify-items: start;
+  min-height: 190px;
+  padding: 30px;
+  text-align: left;
+}
+.empty-state h3 {
+  color: var(--text);
+  font-size: 1.25rem;
+}
+.empty-state p {
+  max-width: 520px;
+  color: var(--muted);
+}
+
 .event-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
