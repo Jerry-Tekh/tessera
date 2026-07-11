@@ -1,6 +1,6 @@
-# Tessera Frontend
+# Zireva Frontend
 
-React + Vite frontend for Tessera.
+React + Vite frontend for Zireva.
 
 ## Local Development
 

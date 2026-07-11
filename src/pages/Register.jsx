@@ -29,7 +29,7 @@ export default function Register() {
   return (
     <div className="auth-wrap reveal">
       <section className="auth-card panel">
-        <span className="eyebrow">Join Tessera</span>
+        <span className="eyebrow">Join Zireva</span>
         <h1 style={{ fontSize: '2.2rem', marginTop: 10 }}>Create account</h1>
         {err && <p className="alert danger" style={{ marginTop: 16 }}>{err}</p>}
         <form onSubmit={onSubmit} className="stack" style={{ marginTop: 22 }}>

@@ -51,7 +51,7 @@ export default function App() {
         <div className="app-header-inner">
         <Link to="/" className="brand">
           <img className="brand-logo" src={logoTicUrl} alt="" aria-hidden="true" />
-          <span className="brand-name">Tessera</span>
+          <span className="brand-name">Zireva</span>
         </Link>
         <Nav />
         </div>
@@ -73,7 +73,7 @@ export default function App() {
       </main>
       <footer className="app-footer">
         <div className="app-footer-inner">
-        <span className="eyebrow">Tessera Live Events</span>
+        <span className="eyebrow">Zireva Live Events</span>
         <SystemHealth />
         </div>
       </footer>

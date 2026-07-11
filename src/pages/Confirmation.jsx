@@ -62,7 +62,7 @@ export default function Confirmation() {
             <div style={{ padding: 22, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 220 }}>
               <div>
                 <span className="eyebrow">Admit one</span>
-                <h2 style={{ marginTop: 8 }}>Tessera</h2>
+                <h2 style={{ marginTop: 8 }}>Zireva</h2>
                 <p className="mono muted" style={{ marginTop: 8, fontSize: '0.78rem' }}>{t.id.slice(0, 8).toUpperCase()}</p>
               </div>
               <span className="badge ok" style={{ alignSelf: 'flex-start', marginTop: 18 }}>{t.status}</span>

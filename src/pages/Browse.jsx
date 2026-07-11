@@ -230,7 +230,7 @@ export default function Browse() {
       )}
       </section>
 
-      <section className="trust-bar reveal" aria-label="How Tessera works">
+      <section className="trust-bar reveal" aria-label="How Zireva works">
         {TRUST_ITEMS.map((item) => (
           <article key={item.title} className="trust-card">
             <span className="trust-icon"><TrustIcon type={item.icon} /></span>
