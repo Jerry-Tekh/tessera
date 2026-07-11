@@ -14,6 +14,7 @@ import Scanner from './pages/Scanner.jsx';
 import AdminUsers from './pages/AdminUsers.jsx';
 import SystemHealth from './components/SystemHealth.jsx';
 import { RequireAuth, RequireRole } from './components/RouteGuards.jsx';
+import logoTicUrl from './assets/logoTic.jfif?url';
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -49,7 +50,7 @@ export default function App() {
       <header className="app-header">
         <div className="app-header-inner">
         <Link to="/" className="brand">
-          <span className="brand-mark">T</span>
+          <img className="brand-logo" src={logoTicUrl} alt="" aria-hidden="true" />
           <span className="brand-name">Tessera</span>
         </Link>
         <Nav />
