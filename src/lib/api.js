@@ -1,7 +1,11 @@
 import axios from 'axios';
 
 let accessToken = null;
+let csrfToken = null;
 export function setAccessToken(t) { accessToken = t; }
+export function setCsrfToken(t) { csrfToken = t; }
+
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/+$/, '');
 
 export class ApiError extends Error {
   constructor(code, status, message) {
@@ -12,7 +16,7 @@ export class ApiError extends Error {
   }
 }
 
-export const http = axios.create({ baseURL: '/api/v1', withCredentials: true });
+export const http = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
 
 function readCookie(name) {
   const m = document.cookie.match(new RegExp(`(^|; )${name}=([^;]+)`));
@@ -20,17 +24,30 @@ function readCookie(name) {
 }
 
 function csrfHeader() {
-  const csrf = readCookie('csrf');
+  const csrf = csrfToken || readCookie('csrf');
   return csrf ? { 'X-CSRF-Token': csrf } : {};
+}
+
+function rememberCsrf(data) {
+  if (data?.csrfToken) csrfToken = data.csrfToken;
+}
+
+async function ensureCsrfToken() {
+  if (csrfToken || readCookie('csrf')) return;
+  const res = await axios.get(`${API_BASE_URL}/auth/csrf`, { withCredentials: true });
+  rememberCsrf(res.data?.data);
 }
 
 // Rotate the access token using the httpOnly refresh cookie (+ CSRF double-submit).
 // Uses raw axios so it bypasses the unwrap/refresh interceptors below.
 async function refreshAccessToken() {
-  const res = await axios.post('/api/v1/auth/refresh', {}, {
+  await ensureCsrfToken();
+  const res = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
     withCredentials: true, headers: csrfHeader(),
   });
-  const token = res.data?.data?.accessToken;
+  const data = res.data?.data;
+  rememberCsrf(data);
+  const token = data?.accessToken;
   if (!token) throw new Error('refresh failed');
   setAccessToken(token);
   return token;
@@ -50,6 +67,7 @@ http.interceptors.request.use((config) => {
 // failures into a typed ApiError.
 http.interceptors.response.use(
   (res) => {
+    rememberCsrf(res.data?.data);
     if (res.data && res.data.success === false) {
       const e = res.data.error || {};
       throw new ApiError(e.code || 'UNKNOWN', res.status, e.message || 'Error');
