@@ -5,12 +5,64 @@ import { apiGet } from '../lib/api';
 import { heroFor } from '../lib/images';
 
 const PAGE = 8;
+const POPULAR_SEARCHES = ['Fintech', 'SummerFest', 'AIArena'];
+const VENUES = [
+  { name: 'The Silicon Hub', events: 12, image: '/images/events/m-accelerator-yTsy3PYFPtc-unsplash.jpg' },
+  { name: 'Civic Hall', events: 9, image: '/images/events/antenna-ohNCIiKVT1g-unsplash.jpg' },
+  { name: 'North Pier Arena', events: 7, image: '/images/events/nicholas-green-nPz8akkUmDI-unsplash.jpg' },
+  { name: 'Glasshouse Live', events: 6, image: '/images/events/priscilla-du-preez-Q7wGvnbuwj0-unsplash.jpg' },
+];
+const TRUST_ITEMS = [
+  {
+    title: 'Secure Checkout',
+    copy: 'Encryption-backed transactions for peace of mind.',
+    icon: 'lock',
+  },
+  {
+    title: 'Instant Delivery',
+    copy: 'Digital QR tickets delivered to your wallet immediately.',
+    icon: 'ticket',
+  },
+  {
+    title: 'Verified Organizers',
+    copy: 'High-trust vetting for every event on the platform.',
+    icon: 'shield',
+  },
+];
 const fmtDate = (s) => (s ? new Date(s).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Date TBA');
 const fmtFullDate = (s) => (s ? new Date(s).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBA');
+
+function TrustIcon({ type }) {
+  if (type === 'ticket') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.75 8.75a2 2 0 0 1 2-2h10.5a2 2 0 0 1 2 2v1.45a2.05 2.05 0 0 0 0 3.6v1.45a2 2 0 0 1-2 2H6.75a2 2 0 0 1-2-2V13.8a2.05 2.05 0 0 0 0-3.6V8.75Z" />
+        <path d="M9.25 8.25v7.5" />
+      </svg>
+    );
+  }
+  if (type === 'shield') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4.75 18.25 7v4.85c0 3.9-2.5 6.25-6.25 7.4-3.75-1.15-6.25-3.5-6.25-7.4V7L12 4.75Z" />
+        <path d="m9.5 12.25 1.65 1.65 3.35-3.65" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7.75 10.5V8.75a4.25 4.25 0 0 1 8.5 0v1.75" />
+      <path d="M6.75 10.5h10.5a1.5 1.5 0 0 1 1.5 1.5v5.25a1.5 1.5 0 0 1-1.5 1.5H6.75a1.5 1.5 0 0 1-1.5-1.5V12a1.5 1.5 0 0 1 1.5-1.5Z" />
+      <path d="M12 14v1.5" />
+    </svg>
+  );
+}
 
 export default function Browse() {
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('date');
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
 
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['events'],
@@ -31,37 +83,92 @@ export default function Browse() {
     });
   }, [data, q, sort]);
 
+  const allEvents = useMemo(() => (data?.pages ?? []).flat(), [data]);
+  const featuredEvents = useMemo(() => {
+    return [...allEvents]
+      .sort((a, b) => (a.starts_at || '9999').localeCompare(b.starts_at || '9999'))
+      .slice(0, 4);
+  }, [allEvents]);
+
+  function submitNewsletter(e) {
+    e.preventDefault();
+    setNewsletterSubmitted(true);
+  }
+
   return (
-    <div className="page">
-      <header className="page-hero reveal">
-        <span className="eyebrow">Now on sale</span>
-        <h1>Find your next live moment.</h1>
-        <p>
-          Concerts, festivals and one-off happenings. Secure seats in seconds — guest checkout, instant QR tickets.
-        </p>
+    <div className="page browse-page">
+      <header className="browse-hero reveal">
+        <div className="browse-hero-inner">
+          <span className="eyebrow">Premium event access</span>
+          <h1>Access the Unforgettable.</h1>
+          <p>
+            Premium tickets to the world's most exclusive events, tech summits, and live experiences.
+          </p>
+          <form className="browse-search" role="search" onSubmit={(e) => e.preventDefault()}>
+            <input
+              aria-label="Search events"
+              placeholder="Search events, venues, or categories"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            {q && (
+              <button type="button" className="ghost" onClick={() => setQ('')}>
+                Clear
+              </button>
+            )}
+          </form>
+          <div className="popular-searches" aria-label="Popular searches">
+            <span>Popular Searches</span>
+            {POPULAR_SEARCHES.map((item) => (
+              <button type="button" key={item} onClick={() => setQ(item)}>
+                #{item}
+              </button>
+            ))}
+          </div>
+        </div>
       </header>
 
-      <section className="panel" style={{ padding: 18 }}>
-        <div className="row" style={{ alignItems: 'end' }}>
-        <label style={{ flex: '1 1 300px' }}>Search
-        <input
-          aria-label="Search events"
-          placeholder="Search events or venues…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        </label>
-        <label style={{ width: 190 }}>Sort
-        <select aria-label="Sort events" value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="date">Soonest first</option>
-          <option value="name">A–Z</option>
-        </select>
-        </label>
+      <section className="browse-section reveal" aria-labelledby="featured-heading">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">Featured highlights</span>
+            <h2 id="featured-heading">Must-see events</h2>
+          </div>
+          <span className="muted">Limited availability across curated drops.</span>
         </div>
-        <div className="row" style={{ marginTop: 14 }}>
-          {['All', 'Music', 'Culture', 'Festival'].map((item) => <span key={item} className="badge">{item}</span>)}
+
+        <div className="featured-scroller">
+          {isLoading && [0, 1, 2].map((item) => <div key={item} className="featured-card skeleton-card" />)}
+          {!isLoading && featuredEvents.map((ev) => (
+            <Link key={ev.id} to={`/events/${ev.id}`} className="featured-card">
+              <img src={heroFor(ev.id)} alt="" />
+              <div className="featured-overlay" />
+              <div className="featured-content">
+                <span className="badge highlight">Limited Availability</span>
+                <div>
+                  <h3>{ev.title}</h3>
+                  <p>{fmtFullDate(ev.starts_at)}{ev.location ? ` · ${ev.location}` : ''}</p>
+                </div>
+                <span className="btn primary">View Event</span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
+
+      <section className="browse-section reveal" aria-labelledby="events-heading">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">Browse events</span>
+            <h2 id="events-heading">Explore all events</h2>
+          </div>
+          <label className="sort-control">Sort
+            <select aria-label="Sort events" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="date">Soonest first</option>
+              <option value="name">A-Z</option>
+            </select>
+          </label>
+        </div>
 
       {isLoading && <p className="muted">Loading events…</p>}
       {error && <p className="muted">Could not load events.</p>}
@@ -95,12 +202,69 @@ export default function Browse() {
       )}
 
       {hasNextPage && !q && (
-        <div style={{ textAlign: 'center' }}>
+        <div className="load-more-row">
           <button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
             {isFetchingNextPage ? 'Loading…' : 'Load more events'}
           </button>
         </div>
       )}
+      </section>
+
+      <section className="trust-bar reveal" aria-label="How Tessera works">
+        {TRUST_ITEMS.map((item) => (
+          <article key={item.title} className="trust-card">
+            <span className="trust-icon"><TrustIcon type={item.icon} /></span>
+            <div>
+              <h3>{item.title}</h3>
+              <p>{item.copy}</p>
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <section className="newsletter-cta reveal" aria-labelledby="newsletter-heading">
+        <div>
+          <span className="eyebrow">Early access</span>
+          <h2 id="newsletter-heading">Join the Inner Circle.</h2>
+          <p>Get notified about presales and exclusive drops.</p>
+        </div>
+        <form className="newsletter-form" onSubmit={submitNewsletter}>
+          <input
+            aria-label="Email for presale notifications"
+            type="email"
+            placeholder="you@example.com"
+            value={newsletterEmail}
+            onChange={(e) => {
+              setNewsletterEmail(e.target.value);
+              setNewsletterSubmitted(false);
+            }}
+            required
+          />
+          <button type="submit" className="primary">Notify Me</button>
+          {newsletterSubmitted && <p className="newsletter-note">You are on the early access list.</p>}
+        </form>
+      </section>
+
+      <section className="browse-section reveal" aria-labelledby="venues-heading">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">Social proof</span>
+            <h2 id="venues-heading">Top venues this week</h2>
+          </div>
+          <span className="muted">Trending rooms with strong demand.</span>
+        </div>
+        <div className="venue-grid">
+          {VENUES.map((venue) => (
+            <article key={venue.name} className="venue-card">
+              <img src={venue.image} alt="" />
+              <div>
+                <h3>{venue.name}</h3>
+                <p>{venue.events} Events</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

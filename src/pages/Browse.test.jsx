@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { http, HttpResponse } from 'msw';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -24,7 +24,8 @@ describe('Browse', () => {
       meta: { page: 1, pageSize: 20, count: 1 },
     })));
     renderPage();
-    expect(await screen.findByText('Midnight Symphony')).toBeInTheDocument();
+    const results = await screen.findByRole('region', { name: /explore all events/i });
+    expect(await within(results).findByText('Midnight Symphony')).toBeInTheDocument();
   });
 
   it('filters the grid by the search box', async () => {
@@ -36,9 +37,12 @@ describe('Browse', () => {
       ],
     })));
     renderPage();
-    expect(await screen.findByText('Midnight Symphony')).toBeInTheDocument();
+    const results = await screen.findByRole('region', { name: /explore all events/i });
+    expect(await within(results).findByText('Midnight Symphony')).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText(/search events/i), 'neon');
-    expect(screen.getByText('Neon Pulse Festival')).toBeInTheDocument();
-    expect(screen.queryByText('Midnight Symphony')).not.toBeInTheDocument();
+    expect(await within(results).findByText('Neon Pulse Festival')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(results).queryByText('Midnight Symphony')).not.toBeInTheDocument();
+    });
   });
 });
